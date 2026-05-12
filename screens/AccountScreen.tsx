@@ -9,9 +9,7 @@ export default function AccountScreen() {
   const user = useSelector((state: RootState) => state.app.currentUser);
 
   const handleLogout = async () => {
-    console.log("Logout click")
     await logoutAPI();
-    console.log("Logout finsh")
   };
 
   return (

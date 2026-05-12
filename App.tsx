@@ -20,6 +20,7 @@ import { setUser } from "./redux/appSlice";
 import AccountScreen from "./screens/AccountScreen";
 import LoginScreen from "./screens/auth/LoginScreen";
 import SignupScreen from "./screens/auth/SignupScreen";
+import SuperAdminScreen from "./screens/SuperAdminScreen";
 export type RootStackParamList = {
   Members: undefined;
   Fund: undefined;
@@ -40,6 +41,7 @@ const AuthStack = () => {
 };
 
 const MainTabs = () => {
+  const user = useSelector((state: RootState) => state.app.currentUser);
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -50,6 +52,7 @@ const MainTabs = () => {
           if (route.name === "Fund") iconName = "wallet";
           if (route.name === "Events") iconName = "calendar";
           if (route.name === "Account") iconName = "person";
+          if (route.name === "Admin") iconName = "settings";
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
@@ -57,10 +60,20 @@ const MainTabs = () => {
         tabBarInactiveTintColor: "gray",
       })}
     >
-      <Tab.Screen name="Events" component={EventScreen} />
-      <Tab.Screen name="Members" component={MembersScreen} />
-      <Tab.Screen name="Fund" component={FundScreen} />
-      <Tab.Screen name="Account" component={AccountScreen} />
+      {user?.role === "SUPER_ADMIN" && (
+        <>
+          <Tab.Screen name="Admin" component={SuperAdminScreen} />
+          <Tab.Screen name="Account" component={AccountScreen} />
+        </>
+      )}
+      {user?.role === "ADMIN" && (
+        <>
+          <Tab.Screen name="Events" component={EventScreen} />
+          <Tab.Screen name="Members" component={MembersScreen} />
+          <Tab.Screen name="Fund" component={FundScreen} />
+          <Tab.Screen name="Account" component={AccountScreen} />
+        </>
+      )}
     </Tab.Navigator>
   );
 };
@@ -73,30 +86,26 @@ const AppWrapper = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log("Auth state:", firebaseUser);
       if (firebaseUser) {
         const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
-  
+
         if (userDoc.exists()) {
           dispatch(setUser(userDoc.data()));
-        }
-        else{
-          console.log("User logged out");
+        } else {
           dispatch(setUser(null));
         }
+      } else {
+        // 🔥 THIS WAS MISSING
+        dispatch(setUser(null));
       }
     });
-  
+
     return unsubscribe;
   }, []);
 
   return (
     <NavigationContainer key={user ? "app" : "auth"}>
-      {!user ? (
-        <AuthStack />
-      ) : (
-        <MainTabs />
-      )}
+      {!user ? <AuthStack /> : <MainTabs />}
     </NavigationContainer>
   );
 };
@@ -105,9 +114,9 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
-      <Provider store={store}>
-        <AppWrapper />
-      </Provider>
+        <Provider store={store}>
+          <AppWrapper />
+        </Provider>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
