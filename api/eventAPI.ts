@@ -80,6 +80,15 @@ export const joinEventAPI = async (
   // Event
   const eventRef = doc(db, "events", eventId);
   const eventDoc = await getDoc(eventRef);
+  const userRef = doc(db, "users", userId);
+
+  const userDoc = await getDoc(userRef);
+
+  if (!userDoc.exists()) {
+    throw new Error("User not found");
+  }
+
+  const userData = userDoc.data();
 
   if (!eventDoc.exists()) {
     throw new Error("Event not found");
@@ -100,26 +109,20 @@ export const joinEventAPI = async (
     where("userId", "==", userId)
   );
 
-  const membershipSnapshot =
-    await getDocs(membershipQuery);
+  const membershipSnapshot = await getDocs(membershipQuery);
 
   if (membershipSnapshot.empty) {
-    throw new Error(
-      "You are not part of this group"
-    );
+    throw new Error("You are not part of this group");
   }
 
-  const membership =
-    membershipSnapshot.docs[0].data();
+  const membership = membershipSnapshot.docs[0].data();
 
   // MEMBER requires approval
   if (
     membership.membershipType === "MEMBER" &&
     membership.status !== "APPROVED"
   ) {
-    throw new Error(
-      "Awaiting admin approval"
-    );
+    throw new Error("Awaiting admin approval");
   }
 
   const eventData = eventDoc.data();
@@ -128,14 +131,10 @@ export const joinEventAPI = async (
   const members = eventData.members || [];
 
   // Already joined?
-  const alreadyJoined = members.some(
-    (m: any) => m.memberId === userId
-  );
+  const alreadyJoined = members.some((m: any) => m.memberId === userId);
 
   if (alreadyJoined) {
-    throw new Error(
-      "Already joined this event"
-    );
+    throw new Error("Already joined this event");
   }
 
   const fee =
@@ -145,16 +144,16 @@ export const joinEventAPI = async (
 
   members.push({
     memberId: userId,
+    firstName: userData.firstName,
+    lastName: userData.lastName,
 
-    membershipType:
-      membership.membershipType,
+    membershipType: membership.membershipType,
 
     fee,
 
     paid: 0,
 
-    joinedAt:
-      new Date().toISOString(),
+    joinedAt: new Date().toISOString(),
   });
 
   await updateDoc(eventRef, {

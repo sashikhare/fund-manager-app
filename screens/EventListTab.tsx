@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   settleEventAPI,
   subscribeEventsByGroupAPI,
-  updateEventMemberAPI
+  updateEventMemberAPI,
 } from "../api/eventAPI";
 import { updateFundAPI } from "../api/fundApi";
 import { setEvents } from "../redux/appSlice";
@@ -21,13 +21,11 @@ export default function EventListTab() {
   const transactions = useSelector(
     (state: RootState) => state.app.transactions
   );
-  const groupId = useSelector(
-    (state: RootState) => state.app.selectedGroup
-  );
+  const groupId = useSelector((state: RootState) => state.app.selectedGroup);
 
   const selectedGroup = useSelector(
-      (state: RootState) => state.app.selectedGroup
-    );
+    (state: RootState) => state.app.selectedGroup
+  );
 
   // const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
@@ -35,36 +33,47 @@ export default function EventListTab() {
 
   // useEffect(() => {
   //   if (!groupId) return;
-  
+
   //   const load = async () => {
   //     const data = await getEventsByGroupAPI(groupId);
   //     dispatch(setEvents(data));
   //   };
-  
+
   //   load();
   // }, [groupId]);
 
   useEffect(() => {
     if (!selectedGroup?.id) return;
-  
-    const unsubscribe =
-      subscribeEventsByGroupAPI(
-        selectedGroup.id,
-        (data) => {
-          dispatch(setEvents(data));
-        }
-      );
-  
+
+    const unsubscribe = subscribeEventsByGroupAPI(selectedGroup.id, (data) => {
+      dispatch(setEvents(data));
+    });
+
     return () => unsubscribe();
   }, [selectedGroup]);
-  
+
   const handleSettle = async () => {
     if (!selectedEvent) return;
 
     const totalCollected = selectedEvent.members.reduce(
-      (sum, m) => sum + (m.paid || 0),
+      (sum, m) => sum + (m.fee || 0),
       0
     );
+
+    for (const member of selectedEvent.members) {
+      const amount =
+        Number(
+          localAmounts[member.memberId] ??
+          member.fee ??
+          0
+        );
+    
+      await updateEventMemberAPI(
+        selectedEvent.id,
+        member.memberId,
+        amount
+      );
+    }
 
     const remaining = totalCollected - selectedEvent.turfBookingAmount;
 
@@ -91,12 +100,12 @@ export default function EventListTab() {
   // 📄 EVENT DETAIL
   if (selectedEvent) {
     const totalCollected = selectedEvent.members.reduce(
-      (sum: number, m: any) => sum + (m.paid || 0),
+      (sum: number, m: any) => sum + (m.fee || 0),
       0
     );
 
     const remaining = totalCollected - selectedEvent.turfBookingAmount;
-
+    
     return (
       <View style={{ flex: 1, padding: 16 }}>
         <View style={styles.eventMetaRow}>
@@ -120,16 +129,17 @@ export default function EventListTab() {
           data={selectedEvent.members}
           keyExtractor={(item) => item.memberId}
           renderItem={({ item }) => {
-            const member = members.find((m) => m.id === item.memberId);
-
-            if (!member) return null;
-
+            // const member = members.find((m) => m.id === item.memberId);
+            const member = members.find(
+              (m) => m.id === item.memberId
+            );
+            
             return (
               <View style={styles.memberRow}>
-                <Text style={styles.memberName}>{member.firstName}</Text>
+                <Text style={styles.memberName}>{item.firstName}</Text>
 
                 {selectedEvent.isSettled ? (
-                  <Text style={styles.amountText}>₹{item.paid || 0}</Text>
+                  <Text style={styles.amountText}>₹{item.fee || 0}</Text>
                 ) : (
                   <>
                     <View style={{ flexDirection: "row" }}>
@@ -146,8 +156,12 @@ export default function EventListTab() {
                           )
                         }
                       /> */}
+                      
                       <TextInput
-                        value={localAmounts[item.memberId] || ""}
+                        value={
+                          localAmounts[item.memberId] ??
+                          String(item.paid || item.fee || 0)
+                        }
                         onChangeText={(val) =>
                           setLocalAmounts((prev) => ({
                             ...prev,
@@ -158,7 +172,7 @@ export default function EventListTab() {
                           updateEventMemberAPI(
                             selectedEvent.id,
                             item.memberId,
-                            Number(localAmounts[item.memberId] || 0)
+                            Number(localAmounts[item.memberId] ?? item.fee ?? 0)
                           )
                         }
                       />
@@ -200,6 +214,7 @@ export default function EventListTab() {
           (sum: number, m: any) => sum + (m.paid || 0),
           0
         );
+
 
         return (
           <Pressable
