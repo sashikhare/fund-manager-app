@@ -1,23 +1,21 @@
 import {
-    doc,
-    getDoc,
-    onSnapshot,
-    setDoc,
-    updateDoc
+  doc,
+  getDoc,
+  onSnapshot,
+  setDoc
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 
 const FUND_DOC = "main"; // single doc
 
-export const subscribeFund = (callback: (data: any) => void) => {
-    const ref = doc(db, "fund", FUND_DOC);
-  
-    return onSnapshot(ref, (snap) => {
-      if (snap.exists()) {
-        callback(snap.data());
-      }
-    });
-  };
+export const subscribeFund = (
+  groupId: string,
+  callback: (data: any) => void
+) => {
+  return onSnapshot(doc(db, "funds", groupId), (snapshot) => {
+    callback(snapshot.data());
+  });
+};
 
 // GET FUND
 export const getFundAPI = async () => {
@@ -46,7 +44,12 @@ export const initFund = async () => {
   
 
 // UPDATE FUND
-export const updateFundAPI = async (data: any) => {
-  const ref = doc(db, "fund", FUND_DOC);
-  await updateDoc(ref, data);
+export const updateFundAPI = async (
+  groupId: string,
+  data: any
+) => {
+  await setDoc(
+    doc(db, "funds", groupId),
+    data
+  );
 };

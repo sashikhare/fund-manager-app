@@ -3,8 +3,8 @@ import { FlatList, Pressable, Text, TextInput, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import {
   settleEventAPI,
-  subscribeEvents,
-  updateEventMemberAPI,
+  subscribeEventsByGroupAPI,
+  updateEventMemberAPI
 } from "../api/eventAPI";
 import { updateFundAPI } from "../api/fundApi";
 import { setEvents } from "../redux/appSlice";
@@ -21,19 +21,43 @@ export default function EventListTab() {
   const transactions = useSelector(
     (state: RootState) => state.app.transactions
   );
+  const groupId = useSelector(
+    (state: RootState) => state.app.selectedGroup
+  );
+
+  const selectedGroup = useSelector(
+      (state: RootState) => state.app.selectedGroup
+    );
 
   // const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const selectedEvent = events.find((e) => e.id === selectedEventId);
 
+  // useEffect(() => {
+  //   if (!groupId) return;
+  
+  //   const load = async () => {
+  //     const data = await getEventsByGroupAPI(groupId);
+  //     dispatch(setEvents(data));
+  //   };
+  
+  //   load();
+  // }, [groupId]);
+
   useEffect(() => {
-    const unsubscribe = subscribeEvents((data) => {
-      dispatch(setEvents(data));
-    });
-
+    if (!selectedGroup?.id) return;
+  
+    const unsubscribe =
+      subscribeEventsByGroupAPI(
+        selectedGroup.id,
+        (data) => {
+          dispatch(setEvents(data));
+        }
+      );
+  
     return () => unsubscribe();
-  }, []);
-
+  }, [selectedGroup]);
+  
   const handleSettle = async () => {
     if (!selectedEvent) return;
 
@@ -56,7 +80,7 @@ export default function EventListTab() {
       amount: remaining,
       date: new Date().toISOString(),
     };
-    await updateFundAPI({
+    await updateFundAPI(selectedGroup?.id, {
       fund: updatedFund,
       transactions: [newTransaction, ...transactions],
     });

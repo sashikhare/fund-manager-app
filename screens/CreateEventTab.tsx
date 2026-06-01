@@ -1,5 +1,5 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -15,19 +15,37 @@ import {
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { createEventAPI } from "../api/eventAPI";
+import { getEligibleEventMembersAPI } from "../api/memberApi";
 import { RootState } from "../redux/store";
 import { styles } from "../styles/mainStyles";
 
 export default function CreateEventTab() {
   const dispatch = useDispatch();
   const members = useSelector((state: RootState) => state.app.members);
-
+  const selectedGroup = useSelector(
+    (state: RootState) => state.app.selectedGroup
+  );
+  const [groupMembers, setGroupMembers] = useState<any[]>([]);
   const [eventName, setEventName] = useState("");
   const [turfAmount, setTurfAmount] = useState("");
   const [eventDate, setEventDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [showMemberModal, setShowMemberModal] = useState(false);
+
+  useEffect(() => {
+    if (!selectedGroup?.id) return;
+  
+    const loadMembers = async () => {
+      const data = await getEligibleEventMembersAPI(
+        selectedGroup.id
+      );
+  
+      setGroupMembers(data);
+    };
+  
+    loadMembers();
+  }, [selectedGroup]);
   
 
   const toggleMember = (id: string) => {
@@ -40,15 +58,22 @@ export default function CreateEventTab() {
   };
 
   const handleCreateEvent = async () => {
+    
     if (
       !eventName ||
       !turfAmount ||
-      !eventDate ||
-      selectedMembers.length === 0
+      !eventDate
+      // selectedMembers.length === 0
     ) {
       alert("Fill all fields");
       return;
     }
+
+    if (!selectedGroup?.id) {
+      alert("Please select a group first");
+      return;
+    }
+    
     const newEvent = {
       name: eventName,
       date: eventDate.toISOString(),
@@ -58,27 +83,13 @@ export default function CreateEventTab() {
       })),
       turfBookingAmount: Number(turfAmount),
       isSettled: false,
+      groupId: selectedGroup?.id,
     };
   
     await createEventAPI(newEvent);
   
-    // dispatch(addEvent(savedEvent)); // keep Redux in sync
   
     alert("Event Created");
-
-    // dispatch(
-    //   addEvent({
-    //     id: Date.now().toString(),
-    //     name: eventName,
-    //     date: eventDate.toISOString(),
-    //     members: selectedMembers.map((id) => ({
-    //       memberId: id,
-    //       paid: 0,
-    //     })),
-    //     turfBookingAmount: Number(turfAmount),
-    //     isSettled: false,
-    //   })
-    // );
 
     if (Platform.OS === "android") {
       ToastAndroid.show("Event Created", ToastAndroid.SHORT);
@@ -160,7 +171,7 @@ export default function CreateEventTab() {
       )}
 
       {/* Members */}
-      <Text style={styles.label}>Members</Text>
+      <Text style={styles.label}>Members (Optional)</Text>
       <Pressable style={styles.input} onPress={() => setShowMemberModal(true)}>
         <Text style={{ color: "#000" }}>
           {selectedMembers.length > 0
@@ -187,9 +198,8 @@ export default function CreateEventTab() {
                 <Text style={styles.doneText}>Done</Text>
               </Pressable>
             </View>
-
             <FlatList
-              data={members}
+              data={groupMembers}
               keyExtractor={(item) => item.id}
               style={{ maxHeight: 300 }}
               renderItem={({ item }) => {

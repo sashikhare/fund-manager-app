@@ -184,6 +184,16 @@ export const styles = StyleSheet.create({
     txAmount: {
       fontWeight: "bold",
     },
+
+    guestSecondaryBtn: {
+      // marginHorizontal: 16,
+      marginTop: 30,
+      padding: 16,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: "#007AFF",
+      alignItems: "center",
+    },
     
     secondaryBtn: {
       marginHorizontal: 16,

@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { initFund, subscribeFund, updateFundAPI } from "../api/fundApi";
+import { subscribeFund, updateFundAPI } from "../api/fundApi";
 import { setFundData } from "../redux/appSlice";
 import { RootState } from "../redux/store";
 import { styles } from "../styles/mainStyles";
@@ -29,23 +29,19 @@ export default function FundScreen() {
   const [balance, setBalance] = useState("");
   // const [error, setError] = useState("");
 
+  const selectedGroup = useSelector(
+    (state: RootState) => state.app.selectedGroup
+  );
+
   useEffect(() => {
-    let unsubscribe: any;
-
-    const load = async () => {
-      await initFund();
-
-      unsubscribe = subscribeFund((data) => {
-        dispatch(setFundData(data));
-      });
-    };
-
-    load();
-
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
-  }, []);
+    if (!selectedGroup?.id) return;
+  
+    const unsubscribe = subscribeFund(selectedGroup.id, (data) => {
+      dispatch(setFundData(data));
+    });
+  
+    return unsubscribe;
+  }, [selectedGroup]);
 
   const handleSpend = async () => {
     const value = Number(amount);
@@ -71,7 +67,7 @@ export default function FundScreen() {
     };
 
     // 🔥 Update Firebase
-    await updateFundAPI({
+    await updateFundAPI(selectedGroup?.id, {
       fund: updatedFund,
       transactions: [newTransaction, ...transactions],
     });
@@ -161,7 +157,7 @@ export default function FundScreen() {
                   setError("Enter valid amount");
                   return;
                 }
-                await updateFundAPI({
+                await updateFundAPI(selectedGroup?.id,{
                   fund: value,
                   transactions: [
                     {

@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { FlatList, Pressable, Text, TextInput, View } from "react-native";
@@ -24,15 +25,13 @@ export default function SuperAdminScreen() {
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev = []) =>
-      prev.includes(id)
-        ? prev.filter((i) => i !== id)
-        : [...prev, id]
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
   };
 
   const handleDelete = async () => {
     await Promise.all(selectedIds.map((id) => deleteAdminAPI(id)));
-  
+
     setSelectedIds([]);
     loadAdmins(); // refresh
   };
@@ -131,28 +130,73 @@ export default function SuperAdminScreen() {
         data={admins}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
-            const isSelected = selectedIds?.includes(item.id);
-            return (
-              <Pressable
-                onPress={() => toggleSelect(item.id)}
-                style={[
-                  styles.memberCard,
-                  isSelected && { backgroundColor: "#a19696" },
-                ]}
+          const isSelected = selectedIds?.includes(item.id);
+          return (
+            <Pressable
+              onPress={() => toggleSelect(item.id)}
+              style={[
+                styles.memberCard,
+                isSelected && { backgroundColor: "#a19696" },
+              ]}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
               >
-                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                  <View>
+                <View>
+                  {/* 👤 NAME */}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginBottom: 4,
+                    }}
+                  >
+                    <Ionicons
+                      name="person-outline"
+                      size={16}
+                      color="#aaa"
+                      style={{ marginRight: 6 }}
+                    />
                     <Text style={styles.memberName}>
                       {item.firstName} {item.lastName}
                     </Text>
-                    <Text style={{ color: "#666" }}>{item.email}</Text>
                   </View>
-          
-                  <Text>{isSelected ? "✔️" : ""}</Text>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginBottom: 2,
+                    }}
+                  >
+                    <Ionicons
+                      name="mail-outline"
+                      size={14}
+                      color="#aaa"
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text style={{ color: "#aaa" }}>{item.email}</Text>
+                  </View>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Ionicons
+                      name="call-outline"
+                      size={14}
+                      color="#aaa"
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text style={{ color: "#aaa" }}>
+                      {item.mobile || "No mobile"}
+                    </Text>
+                  </View>
                 </View>
-              </Pressable>
-            );
-          }}
+
+                <Text>{isSelected ? "✔️" : ""}</Text>
+              </View>
+            </Pressable>
+          );
+        }}
       />
     </View>
   );

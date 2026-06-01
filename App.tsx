@@ -8,18 +8,22 @@ import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import EventScreen from "./screens/EventScreen";
 import FundScreen from "./screens/FundScreen";
-import MembersScreen from "./screens/MembersScreen";
+import MemberEventScreen from "./screens/MemberEventScreen";
+import MembersTabScreen from "./screens/MembersTabScreen";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { auth, db } from "./firebase/firebase";
 import { setUser } from "./redux/appSlice";
 import AccountScreen from "./screens/AccountScreen";
+import AdminGroupTabScreen from "./screens/AdminGroupTabScreen";
 import LoginScreen from "./screens/auth/LoginScreen";
 import SignupScreen from "./screens/auth/SignupScreen";
+import GroupListScreen from "./screens/GroupListScreen";
+import MemberGroupTabScreen from "./screens/MemberGroupTabScreen";
 import SuperAdminScreen from "./screens/SuperAdminScreen";
 export type RootStackParamList = {
   Members: undefined;
@@ -52,6 +56,7 @@ const MainTabs = () => {
           if (route.name === "Fund") iconName = "wallet";
           if (route.name === "Events") iconName = "calendar";
           if (route.name === "Account") iconName = "person";
+          if (route.name === "Groups") iconName = "people-outline";
           if (route.name === "Admin") iconName = "settings";
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -63,13 +68,23 @@ const MainTabs = () => {
       {user?.role === "SUPER_ADMIN" && (
         <>
           <Tab.Screen name="Admin" component={SuperAdminScreen} />
+          <Tab.Screen name="Groups" component={GroupListScreen} />
           <Tab.Screen name="Account" component={AccountScreen} />
         </>
       )}
       {user?.role === "ADMIN" && (
         <>
           <Tab.Screen name="Events" component={EventScreen} />
-          <Tab.Screen name="Members" component={MembersScreen} />
+          <Tab.Screen name="Members" component={MembersTabScreen} />
+          <Tab.Screen name="Fund" component={FundScreen} />
+          <Tab.Screen name="Groups" component={AdminGroupTabScreen} />
+          <Tab.Screen name="Account" component={AccountScreen} />
+        </>
+      )}
+      {user?.role === "MEMBER" && (
+        <>
+          <Tab.Screen name="Groups" component={MemberGroupTabScreen} />
+          <Tab.Screen name="Events" component={MemberEventScreen} />
           <Tab.Screen name="Fund" component={FundScreen} />
           <Tab.Screen name="Account" component={AccountScreen} />
         </>
@@ -80,31 +95,53 @@ const MainTabs = () => {
 
 const AppWrapper = () => {
   const user = useSelector((state: RootState) => state.app.currentUser);
-  console.log("Current user:", user);
   const dispatch = useDispatch();
-  const state = useSelector((state: RootState) => state.app);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
-
+        const userRef = doc(db, "users", firebaseUser.uid);
+        const userDoc = await getDoc(userRef);
+  
         if (userDoc.exists()) {
-          dispatch(setUser(userDoc.data()));
+          dispatch(
+            setUser({
+              ...userDoc.data(),
+              uid: firebaseUser.uid,
+            })
+          );
         } else {
-          dispatch(setUser(null));
+          // 🔥 RECREATE USER IF MISSING
+          const role =
+            firebaseUser.email === "your@email.com"
+              ? "SUPER_ADMIN"
+              : "MEMBER";
+  
+          const newUser = {
+            email: firebaseUser.email,
+            role,
+            createdAt: new Date().toISOString(),
+          };
+  
+          await setDoc(userRef, newUser);
+  
+          dispatch(
+            setUser({
+              ...newUser,
+              uid: firebaseUser.uid,
+            })
+          );
         }
       } else {
-        // 🔥 THIS WAS MISSING
         dispatch(setUser(null));
       }
     });
-
+  
     return unsubscribe;
   }, []);
-
+  
   return (
-    <NavigationContainer key={user ? "app" : "auth"}>
+    <NavigationContainer>
       {!user ? <AuthStack /> : <MainTabs />}
     </NavigationContainer>
   );

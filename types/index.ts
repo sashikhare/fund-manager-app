@@ -15,6 +15,7 @@ export interface Member {
     fund: number;
     events: EventItem[];
     currentUser: null;
+    selectedGroup: null,
   }
 
 export type TransactionType = "ADD" | "SPEND" | "EVENT";

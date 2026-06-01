@@ -12,14 +12,18 @@ import {
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { RootStackParamList } from "../../App";
-import { createMemberAPI, deleteMemberAPI, subscribeMembers } from "../api/memberApi";
+import {
+  createMemberAPI,
+  deleteMemberAPI,
+  getMembersByGroupAPI,
+} from "../api/memberApi";
 import { addMember, deleteMembers, setMembers } from "../redux/appSlice";
 import { RootState } from "../redux/store";
 import { styles } from "../styles/mainStyles";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Members">;
 
-export default function MembersScreen({ navigation }: Props) {
+export default function MembersListScreen({ navigation }: Props) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [firstName, setFirstName] = useState("");
@@ -30,55 +34,60 @@ export default function MembersScreen({ navigation }: Props) {
 
   const isSelectionMode = selectedIds.length > 0;
   const hasMembers = members.length > 0;
-
-  
-
-useEffect(() => {
-  const unsubscribe = subscribeMembers((data) => {
-    dispatch(setMembers(data));
-  });
-
-  return () => unsubscribe(); // cleanup
-}, []);
+  const selectedGroup = useSelector(
+    (state: RootState) => state.app.selectedGroup
+  );
 
   // useEffect(() => {
-  //   const load = async () => {
-  //     const data = await getMembersAPI();
+  //   const unsubscribe = subscribeMembers((data) => {
   //     dispatch(setMembers(data));
-  //   };
-  //   load();
+  //   });
+
+  //   return () => unsubscribe(); // cleanup
   // }, []);
+
+  const groupId = useSelector((state: RootState) => state.app.selectedGroup);
+
+  useEffect(() => {
+    if (!selectedGroup?.id) return;
+
+    const load = async () => {
+      const data = await getMembersByGroupAPI(selectedGroup.id);
+      dispatch(setMembers(data));
+    };
+
+    load();
+  }, [selectedGroup]);
 
   useEffect(() => {
     setSelectedIds((prev) =>
-      prev.filter(id => members.some(m => m.id === id))
+      prev.filter((id) => members.some((m) => m.id === id))
     );
   }, [members]);
 
   const handleAdd = async () => {
     if (!firstName || !lastName) return;
     const tempId = Date.now().toString();
-  
+
     const newMember = {
       id: tempId,
       firstName,
       lastName,
     };
-  
+
     dispatch(addMember(newMember)); // keep UI in sync
-    setShowModal(false)
+    setShowModal(false);
     setFirstName("");
     setLastName("");
-    try{
-      const saved = await createMemberAPI({firstName, lastName});
-    }
-    catch(e){
-      console.error("API error", e)
+    try {
+      const saved = await createMemberAPI({ firstName, lastName });
+    } catch (e) {
+      console.error("API error", e);
       // rollback (optional)
       dispatch(deleteMembers([tempId]));
     }
   };
-  
+
   // const handleDelete = () => {
   //   dispatch(deleteMembers(selectedIds));
   //   setSelectedIds([]);
@@ -86,7 +95,7 @@ useEffect(() => {
 
   const handleDelete = async () => {
     const ids = [...selectedIds];
-    await Promise.all(ids.map(id => deleteMemberAPI(id)));
+    await Promise.all(ids.map((id) => deleteMemberAPI(id)));
     // for (let id of selectedIds) {
     //   await deleteMemberAPI(id);
     // }
@@ -143,13 +152,46 @@ useEffect(() => {
               <View style={styles.memberRow}>
                 {/* Avatar */}
                 <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>{item.firstName[0]}{item.lastName[0]}</Text>
+                  <Text style={styles.avatarText}>
+                    {(item.firstName?.[0] || "").toUpperCase()}
+                    {(item.lastName?.[0] || "").toUpperCase()}
+                  </Text>
                 </View>
 
                 {/* Name */}
                 <View style={{ flex: 1 }}>
                   <Text style={styles.memberName}>
                     {item.firstName} {item.lastName}
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    marginTop: 6,
+                    alignSelf: "flex-start",
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderRadius: 20,
+
+                    backgroundColor:
+                      item.membershipType === "GUEST"
+                        ? "#444"
+                        : item.status === "APPROVED"
+                        ? "#1f7a1f"
+                        : "#8a6d1d",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "#fff",
+                      fontSize: 12,
+                      fontWeight: "600",
+                    }}
+                  >
+                    {item.membershipType === "GUEST"
+                      ? "GUEST"
+                      : item.status === "APPROVED"
+                      ? "MEMBER"
+                      : "Awaiting Approval"}
                   </Text>
                 </View>
 

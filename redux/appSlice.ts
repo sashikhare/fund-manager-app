@@ -7,6 +7,7 @@ const initialState: AppState = {
   events: [],
   transactions: [], // ✅ ADD THIS
   currentUser: null,
+  selectedGroup: null
 };
 
 const appSlice = createSlice({
@@ -142,6 +143,10 @@ const appSlice = createSlice({
       state.currentUser = action.payload;
     },
 
+    setSelectedGroup: (state, action) => {
+      state.selectedGroup = action.payload;
+    },
+
   },
 });
 
@@ -158,7 +163,8 @@ export const {
   setEvents,
   setMembers,
   setFundData,
-  setUser
+  setUser,
+  setSelectedGroup
 } = appSlice.actions;
 
 export default appSlice.reducer;
