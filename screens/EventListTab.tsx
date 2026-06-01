@@ -56,9 +56,11 @@ export default function EventListTab() {
     if (!selectedEvent) return;
 
     const totalCollected = selectedEvent.members.reduce(
-      (sum, m) => sum + (m.fee || 0),
+      (sum, m) => sum + (m.paid > 0 ? m.paid : m.fee || 0),
       0
     );
+
+    console.log('selectedEvent.members', selectedEvent.members)
 
     for (const member of selectedEvent.members) {
       const amount =
@@ -100,9 +102,11 @@ export default function EventListTab() {
   // 📄 EVENT DETAIL
   if (selectedEvent) {
     const totalCollected = selectedEvent.members.reduce(
-      (sum: number, m: any) => sum + (m.fee || 0),
+      (sum: number, m: any) => sum + (m.paid > 0 ? m.paid : m.fee || 0),
       0
     );
+
+    console.log('selectedEvent.members',selectedEvent.members)
 
     const remaining = totalCollected - selectedEvent.turfBookingAmount;
     
