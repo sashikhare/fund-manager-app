@@ -102,6 +102,16 @@ const AppWrapper = () => {
       if (firebaseUser) {
         const userRef = doc(db, "users", firebaseUser.uid);
         const userDoc = await getDoc(userRef);
+
+        try {
+          const userDoc = await getDoc(
+            doc(db, "users", firebaseUser.uid)
+          );
+        
+          console.log("USER DOC", userDoc.data());
+        } catch (e) {
+          console.log("USER DOC ERROR", e);
+        }
   
         if (userDoc.exists()) {
           dispatch(

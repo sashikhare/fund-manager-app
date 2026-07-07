@@ -33,13 +33,15 @@ export default function FundScreen() {
     (state: RootState) => state.app.selectedGroup
   );
 
+  const currentUser = useSelector((state: RootState) => state.app.currentUser);
+
   useEffect(() => {
     if (!selectedGroup?.id) return;
-  
+
     const unsubscribe = subscribeFund(selectedGroup.id, (data) => {
       dispatch(setFundData(data));
     });
-  
+
     return unsubscribe;
   }, [selectedGroup]);
 
@@ -84,21 +86,25 @@ export default function FundScreen() {
       <View style={styles.fundCard}>
         <Text style={styles.fundLabel}>Current Fund</Text>
         <Text style={styles.fundAmount}>₹{fund}</Text>
-        <Pressable
-          style={styles.secondaryBtn}
-          onPress={() => setShowSetModal(true)}
-        >
-          <Text style={styles.secondaryBtnText}>Set Balance</Text>
-        </Pressable>
+        {currentUser?.role === "ADMIN" && (
+          <Pressable
+            style={styles.secondaryBtn}
+            onPress={() => setShowSetModal(true)}
+          >
+            <Text style={styles.secondaryBtnText}>Set Balance</Text>
+          </Pressable>
+        )}
       </View>
 
       {/* ➖ Spend Button */}
-      <Pressable
-        style={styles.spendPrimaryBtn}
-        onPress={() => setShowModal(true)}
-      >
-        <Text style={styles.spendPrimaryBtnText}>Spend</Text>
-      </Pressable>
+      {currentUser?.role === "ADMIN" && (
+        <Pressable
+          style={styles.spendPrimaryBtn}
+          onPress={() => setShowModal(true)}
+        >
+          <Text style={styles.spendPrimaryBtnText}>Spend</Text>
+        </Pressable>
+      )}
 
       {/* 📜 History */}
       <FlatList
@@ -119,11 +125,18 @@ export default function FundScreen() {
                 styles.txAmount,
                 // item.type === "ADD" ? { color: "green" } : { color: "red" },
                 ["ADD", "EVENT"].includes(item.type)
-                  ? item.amount > 0 ? { color: "green" } : { color: "red" }
+                  ? item.amount > 0
+                    ? { color: "green" }
+                    : { color: "red" }
                   : { color: "red" },
               ]}
             >
-              {["ADD", "EVENT"].includes(item.type) ? item.amount > 0 ? "+" : "-" : "-"}₹{item.amount > 0 ? item.amount : item.amount * -1}
+              {["ADD", "EVENT"].includes(item.type)
+                ? item.amount > 0
+                  ? "+"
+                  : "-"
+                : "-"}
+              ₹{item.amount > 0 ? item.amount : item.amount * -1}
             </Text>
           </View>
         )}
@@ -157,7 +170,7 @@ export default function FundScreen() {
                   setError("Enter valid amount");
                   return;
                 }
-                await updateFundAPI(selectedGroup?.id,{
+                await updateFundAPI(selectedGroup?.id, {
                   fund: value,
                   transactions: [
                     {

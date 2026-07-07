@@ -60,8 +60,6 @@ export default function EventListTab() {
       0
     );
 
-    console.log('selectedEvent.members', selectedEvent.members)
-
     for (const member of selectedEvent.members) {
       const amount =
         Number(
@@ -106,8 +104,6 @@ export default function EventListTab() {
       0
     );
 
-    console.log('selectedEvent.members',selectedEvent.members)
-
     const remaining = totalCollected - selectedEvent.turfBookingAmount;
     
     return (
@@ -127,7 +123,7 @@ export default function EventListTab() {
             Turf Cost ₹{selectedEvent.turfBookingAmount}
           </Text>
         </View>
-
+        
         {/* Members */}
         <FlatList
           data={selectedEvent.members}
@@ -143,7 +139,7 @@ export default function EventListTab() {
                 <Text style={styles.memberName}>{item.firstName}</Text>
 
                 {selectedEvent.isSettled ? (
-                  <Text style={styles.amountText}>₹{item.fee || 0}</Text>
+                  <Text style={styles.amountText}>₹{item.paid !== item.fee ? item.paid : item.fee || 0}</Text>
                 ) : (
                   <>
                     <View style={{ flexDirection: "row" }}>

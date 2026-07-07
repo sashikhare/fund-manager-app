@@ -88,11 +88,6 @@ export default function MembersListScreen({ navigation }: Props) {
     }
   };
 
-  // const handleDelete = () => {
-  //   dispatch(deleteMembers(selectedIds));
-  //   setSelectedIds([]);
-  // };
-
   const handleDelete = async () => {
     const ids = [...selectedIds];
     await Promise.all(ids.map((id) => deleteMemberAPI(id)));
