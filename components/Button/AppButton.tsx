@@ -23,6 +23,7 @@ export default function AppButton({
   fullWidth = true,
   leftIcon,
   rightIcon,
+  style,
 }: AppButtonProps) {
   const isDisabled = disabled || loading;
 
@@ -37,6 +38,7 @@ export default function AppButton({
         styles[variant],
         fullWidth && styles.fullWidth,
         isDisabled && styles.disabled,
+        style,
       ]}
     >
       <View style={styles.content}>

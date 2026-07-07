@@ -15,15 +15,6 @@ export default function GroupListScreen() {
 
   const [groups, setGroups] = useState<any[]>([]);
 
-  // const loadGroups = async () => {
-  //   const data = await getGroupsByAdminAPI(user?.email);
-  //   setGroups(data);
-  // };
-
-  // useEffect(() => {
-  //   loadGroups();
-  // }, []);
-
   useEffect(() => {
     if (!user?.email) return;
   

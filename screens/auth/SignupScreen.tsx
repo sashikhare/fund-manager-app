@@ -1,7 +1,30 @@
 import React, { useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+
 import { signupAPI } from "../../api/authApi";
-import { styles } from "../../styles/mainStyles";
+
+import {
+  AnimatedBackground,
+  Brand,
+  Button,
+  Card,
+  Input,
+  ScreenContainer,
+  Text,
+} from "../../components";
+
+import {
+  Colors,
+  Radius,
+  Spacing,
+} from "../../theme";
 
 export default function SignupScreen({ navigation }: any) {
   const [email, setEmail] = useState("");
@@ -10,6 +33,7 @@ export default function SignupScreen({ navigation }: any) {
   const [lastName, setLastName] = useState("");
   const [groupId, setGroupId] = useState("");
   const [joinType, setJoinType] = useState("GUEST");
+  const [loading, setLoading] = useState(false);
 
   const handleSignup = async () => {
     if (!firstName || !email || !password) {
@@ -18,6 +42,8 @@ export default function SignupScreen({ navigation }: any) {
     }
 
     try {
+      setLoading(true);
+
       await signupAPI(
         email,
         password,
@@ -32,139 +58,279 @@ export default function SignupScreen({ navigation }: any) {
       alert("Signup successful");
     } catch (e: any) {
       alert(e.message);
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 22, marginBottom: 20 }}>Signup</Text>
-
-      <TextInput
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.modalInput}
-      />
-
-      <TextInput
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={styles.modalInput}
-      />
-
-      <TextInput
-        placeholder="First Name"
-        value={firstName}
-        onChangeText={setFirstName}
-        style={styles.modalInput}
-      />
-
-      <TextInput
-        placeholder="Last Name"
-        value={lastName}
-        onChangeText={setLastName}
-        style={styles.modalInput}
-      />
-
-      <TextInput
-        placeholder="Group ID (optional)"
-        value={groupId}
-        onChangeText={setGroupId}
-        style={styles.modalInput}
-      />
-
-      <Text
-        style={{
-          color: "#fff",
-          marginTop: 10,
-          marginBottom: 10,
-          fontWeight: "600",
-        }}
-      >
-        Join As
-      </Text>
-
-      <View style={{ flexDirection: "row", marginBottom: 20 }}>
-        {/* MEMBER */}
-        <Pressable
-          onPress={() => setJoinType("MEMBER")}
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginRight: 20,
-          }}
+    <AnimatedBackground>
+      <ScreenContainer>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-          <View
-            style={{
-              width: 18,
-              height: 18,
-              borderRadius: 9,
-              borderWidth: 2,
-              borderColor: "#007AFF",
-              justifyContent: "center",
-              alignItems: "center",
-              marginRight: 8,
-            }}
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scroll}
           >
-            {joinType === "MEMBER" && (
-              <View
-                style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: 5,
-                  backgroundColor: "#007AFF",
-                }}
+            <Brand subtitle="Create your account" />
+
+            <Card style={styles.card}>
+              <View style={styles.nameRow}>
+                <View style={styles.half}>
+                  <Input
+                    label="First Name"
+                    placeholder="Enter first name"
+                    value={firstName}
+                    onChangeText={setFirstName}
+                    leftIcon="person-outline"
+                    containerStyle={styles.input}
+                    required
+                  />
+                </View>
+
+                <View style={styles.half}>
+                  <Input
+                    label="Last Name"
+                    placeholder="Enter last name"
+                    value={lastName}
+                    onChangeText={setLastName}
+                    leftIcon="person-outline"
+                    containerStyle={styles.input}
+                  />
+                </View>
+              </View>
+
+              <Input
+                label="Email Address"
+                placeholder="Enter your email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                leftIcon="mail-outline"
+                containerStyle={styles.input}
+                required
               />
-            )}
-          </View>
 
-          <Text style={{ color: "#fff" }}>Member</Text>
-        </Pressable>
-
-        {/* GUEST */}
-        <Pressable
-          onPress={() => setJoinType("GUEST")}
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
-          <View
-            style={{
-              width: 18,
-              height: 18,
-              borderRadius: 9,
-              borderWidth: 2,
-              borderColor: "#007AFF",
-              justifyContent: "center",
-              alignItems: "center",
-              marginRight: 8,
-            }}
-          >
-            {joinType === "GUEST" && (
-              <View
-                style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: 5,
-                  backgroundColor: "#007AFF",
-                }}
+              <Input
+                label="Password"
+                placeholder="Enter your password"
+                value={password}
+                onChangeText={setPassword}
+                password
+                leftIcon="lock-closed-outline"
+                containerStyle={styles.input}
+                required
               />
-            )}
-          </View>
 
-          <Text style={{ color: "#fff" }}>Guest</Text>
-        </Pressable>
-      </View>
+              <Input
+                label="Group Code"
+                helperText="Optional"
+                placeholder="Enter group code"
+                value={groupId}
+                onChangeText={setGroupId}
+                leftIcon="people-outline"
+                containerStyle={styles.input}
+              />
 
-      <Pressable style={styles.modalBtn} onPress={handleSignup}>
-        <Text style={styles.modalBtnText}>Signup</Text>
-      </Pressable>
+              <Text
+                variant="subtitle"
+                weight="600"
+                style={styles.joinTitle}
+              >
+                Join As
+              </Text>
 
-      <Pressable onPress={() => navigation.navigate("Login")}>
-        <Text style={{ marginTop: 10 }}>Already have account? Login</Text>
-      </Pressable>
-    </View>
+              <View style={styles.joinContainer}>
+                <Pressable
+                  onPress={() => setJoinType("MEMBER")}
+                  style={[
+                    styles.joinCard,
+                    joinType === "MEMBER" && styles.joinCardActive,
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.radioOuter,
+                      joinType === "MEMBER" && styles.radioOuterActive,
+                    ]}
+                  >
+                    {joinType === "MEMBER" && (
+                      <View style={styles.radioInner} />
+                    )}
+                  </View>
+
+                  <Text
+                    variant="body"
+                    weight="600"
+                  >
+                    Member
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => setJoinType("GUEST")}
+                  style={[
+                    styles.joinCard,
+                    joinType === "GUEST" && styles.joinCardActive,
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.radioOuter,
+                      joinType === "GUEST" && styles.radioOuterActive,
+                    ]}
+                  >
+                    {joinType === "GUEST" && (
+                      <View style={styles.radioInner} />
+                    )}
+                  </View>
+
+                  <Text
+                    variant="body"
+                    weight="600"
+                  >
+                    Guest
+                  </Text>
+                </Pressable>
+              </View>
+
+              <Button
+                title="Create Account"
+                leftIcon="person-add-outline"
+                loading={loading}
+                onPress={handleSignup}
+                style={styles.signupButton}
+              />
+            </Card>
+
+            <View style={styles.footer}>
+              <Text
+                variant="body"
+                align="center"
+              >
+                Already have an account?
+              </Text>
+
+              <Button
+                title="Login"
+                variant="ghost"
+                onPress={() => navigation.navigate("Login")}
+              />
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </ScreenContainer>
+    </AnimatedBackground>
   );
 }
+
+const styles = StyleSheet.create({
+  scroll: {
+    flexGrow: 1,
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing.xxxl,
+  },
+
+  card: {
+    marginTop: Spacing.xl,
+  },
+
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: Spacing.md,
+  },
+
+  half: {
+    flex: 1,
+  },
+
+  input: {
+    marginBottom: Spacing.lg,
+  },
+
+  joinTitle: {
+    marginTop: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+
+  joinContainer: {
+    flexDirection: "row",
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+
+  joinCard: {
+    flex: 1,
+
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    paddingVertical: Spacing.lg,
+
+    borderRadius: Radius.lg,
+
+    borderWidth: 1,
+
+    borderColor: Colors.border,
+
+    backgroundColor: Colors.surfaceElevated,
+  },
+
+  joinCardActive: {
+    borderColor: Colors.primary,
+
+    backgroundColor: Colors.surfaceGlass,
+  },
+
+  radioOuter: {
+    width: 20,
+
+    height: 20,
+
+    borderRadius: 10,
+
+    borderWidth: 2,
+
+    borderColor: Colors.border,
+
+    justifyContent: "center",
+
+    alignItems: "center",
+
+    marginRight: Spacing.sm,
+  },
+
+  radioOuterActive: {
+    borderColor: Colors.primary,
+  },
+
+  radioInner: {
+    width: 10,
+
+    height: 10,
+
+    borderRadius: 5,
+
+    backgroundColor: Colors.primary,
+  },
+
+  signupButton: {
+    marginTop: Spacing.sm,
+  },
+
+  footer: {
+    alignItems: "center",
+
+    marginTop: Spacing.xl,
+
+    paddingBottom: Spacing.lg,
+  },
+});
