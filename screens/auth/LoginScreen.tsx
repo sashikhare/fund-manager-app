@@ -1,55 +1,140 @@
 import React, { useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useDispatch } from "react-redux";
+
 import { loginAPI } from "../../api/authApi";
 import { setUser } from "../../redux/appSlice";
-import { styles } from "../../styles/mainStyles";
+
+import {
+  AnimatedBackground,
+  Brand,
+  Button,
+  Card,
+  Input,
+  ScreenContainer,
+  Text,
+} from "../../components";
+
+import { Spacing } from "../../theme";
+
+// import {
+//   FadeInView,
+//   SlideUpView,
+// } from "../../components/Animated";
 
 export default function LoginScreen({ navigation }: any) {
   const dispatch = useDispatch();
 
   const [email, setEmail] = useState("");
+
   const [password, setPassword] = useState("");
+
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     try {
+      setLoading(true);
+
       const { userData } = await loginAPI(email, password);
 
       dispatch(setUser(userData));
-
     } catch (e: any) {
       alert(e.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 22, marginBottom: 20 }}>Login</Text>
+    <AnimatedBackground>
+      <ScreenContainer>
+        <View style={styles.container}>
+          {/* <FadeInView> */}
 
-      <TextInput
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.modalInput}
-      />
+          <View style={styles.brand}>
+            <Brand />
+          </View>
 
-      <TextInput
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={styles.modalInput}
-      />
+          {/* </FadeInView> */}
 
-      <Pressable style={styles.modalBtn} onPress={handleLogin}>
-        <Text style={styles.modalBtnText}>Login</Text>
-      </Pressable>
+          {/* <SlideUpView> */}
 
-      <Pressable onPress={() => navigation.navigate("Signup")}>
-  <Text style={{ marginTop: 10, textAlign: "center" }}>
-    Don't have an account? Sign up
-  </Text>
-</Pressable>
-    </View>
+          <Card style={styles.card}>
+            <Input
+              label="Email Address"
+              placeholder="Enter your email"
+              leftIcon="mail-outline"
+              value={email}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              onChangeText={setEmail}
+              containerStyle={styles.input}
+            />
+
+            <Input
+              label="Password"
+              placeholder="Enter your password"
+              leftIcon="lock-closed-outline"
+              password
+              value={password}
+              onChangeText={setPassword}
+              containerStyle={styles.input}
+            />
+
+            <Button
+              title="Login"
+              loading={loading}
+              leftIcon="log-in-outline"
+              onPress={handleLogin}
+              style={styles.button}
+            />
+          </Card>
+
+          {/* </SlideUpView> */}
+
+          <View style={styles.footer}>
+            <Text variant="bodySmall" align="center">
+              Don't have an account?
+            </Text>
+
+            <Button
+              title="Create Account"
+              variant="ghost"
+              onPress={() => navigation.navigate("Signup")}
+            />
+          </View>
+        </View>
+      </ScreenContainer>
+    </AnimatedBackground>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+  },
+
+  brand: {
+    marginBottom: Spacing.section,
+  },
+
+  card: {
+    width: "100%",
+    maxWidth: 420,
+    alignSelf: "center",
+  },
+
+  input: {
+    marginBottom: Spacing.xl,
+  },
+
+  button: {
+    marginTop: Spacing.md,
+  },
+
+  footer: {
+    marginTop: Spacing.xxl,
+    alignItems: "center",
+  },
+});
