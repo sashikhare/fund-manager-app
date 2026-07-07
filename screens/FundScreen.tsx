@@ -1,39 +1,50 @@
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
+  KeyboardAvoidingView,
   Modal,
-  Pressable,
-  Text,
-  TextInput,
-  View,
+  Platform,
+  StyleSheet,
+  View
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
+
 import { subscribeFund, updateFundAPI } from "../api/fundApi";
+import {
+  AnimatedBackground,
+  Button,
+  Card,
+  Icon,
+  Input,
+  ScreenContainer,
+  Text,
+} from "../components";
 import { setFundData } from "../redux/appSlice";
 import { RootState } from "../redux/store";
-import { styles } from "../styles/mainStyles";
+import { Colors, Radius, Shadows, Spacing } from "../theme";
 
 export default function FundScreen() {
+  const dispatch = useDispatch();
+
   const fund = useSelector((state: RootState) => state.app.fund);
+
   const transactions = useSelector(
     (state: RootState) => state.app.transactions
   );
-
-  const dispatch = useDispatch();
-
-  const [showModal, setShowModal] = useState(false);
-  const [title, setTitle] = useState("");
-  const [amount, setAmount] = useState("");
-  const [error, setError] = useState("");
-  const [showSetModal, setShowSetModal] = useState(false);
-  const [balance, setBalance] = useState("");
-  // const [error, setError] = useState("");
 
   const selectedGroup = useSelector(
     (state: RootState) => state.app.selectedGroup
   );
 
   const currentUser = useSelector((state: RootState) => state.app.currentUser);
+
+  const [showModal, setShowModal] = useState(false);
+  const [showSetModal, setShowSetModal] = useState(false);
+
+  const [title, setTitle] = useState("");
+  const [amount, setAmount] = useState("");
+  const [balance, setBalance] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!selectedGroup?.id) return;
@@ -47,6 +58,10 @@ export default function FundScreen() {
 
   const handleSpend = async () => {
     const value = Number(amount);
+    if (isNaN(value)) {
+      setError("Please enter a valid numeric amount.");
+      return;
+    }
 
     if (!title || !amount) {
       setError("All fields are required");
@@ -57,7 +72,7 @@ export default function FundScreen() {
       setError("Not enough balance");
       return;
     }
-
+    
     const updatedFund = fund - value;
 
     const newTransaction = {
@@ -68,7 +83,6 @@ export default function FundScreen() {
       date: new Date().toISOString(),
     };
 
-    // 🔥 Update Firebase
     await updateFundAPI(selectedGroup?.id, {
       fund: updatedFund,
       transactions: [newTransaction, ...transactions],
@@ -81,161 +95,378 @@ export default function FundScreen() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      {/* 💰 Fund Card */}
-      <View style={styles.fundCard}>
-        <Text style={styles.fundLabel}>Current Fund</Text>
-        <Text style={styles.fundAmount}>₹{fund}</Text>
-        {currentUser?.role === "ADMIN" && (
-          <Pressable
-            style={styles.secondaryBtn}
-            onPress={() => setShowSetModal(true)}
-          >
-            <Text style={styles.secondaryBtnText}>Set Balance</Text>
-          </Pressable>
-        )}
-      </View>
-
-      {/* ➖ Spend Button */}
-      {currentUser?.role === "ADMIN" && (
-        <Pressable
-          style={styles.spendPrimaryBtn}
-          onPress={() => setShowModal(true)}
+    <AnimatedBackground>
+      <ScreenContainer>
+        <KeyboardAvoidingView
+          style={styles.container}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-          <Text style={styles.spendPrimaryBtnText}>Spend</Text>
-        </Pressable>
-      )}
+          {/* Balance Card */}
 
-      {/* 📜 History */}
-      <FlatList
-        data={transactions}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: 100 }}
-        renderItem={({ item }) => (
-          <View style={styles.txCard}>
-            <View>
-              <Text style={styles.txTitle}>{item.title}</Text>
-              <Text style={styles.txDate}>
-                {new Date(item.date).toLocaleDateString()}
-              </Text>
-            </View>
+          <Card variant="elevated" style={styles.balanceCard}>
+            <Text
+              variant="bodySmall"
+              color={Colors.textSecondary}
+              align="center"
+            >
+              Available Balance
+            </Text>
 
             <Text
-              style={[
-                styles.txAmount,
-                // item.type === "ADD" ? { color: "green" } : { color: "red" },
-                ["ADD", "EVENT"].includes(item.type)
-                  ? item.amount > 0
-                    ? { color: "green" }
-                    : { color: "red" }
-                  : { color: "red" },
-              ]}
+              variant="h1"
+              weight="700"
+              align="center"
+              style={styles.balanceAmount}
             >
-              {["ADD", "EVENT"].includes(item.type)
-                ? item.amount > 0
-                  ? "+"
-                  : "-"
-                : "-"}
-              ₹{item.amount > 0 ? item.amount : item.amount * -1}
+              ₹{Number(fund).toLocaleString()}
             </Text>
-          </View>
-        )}
-      />
 
-      {/* 🌑 Modal */}
-      <Modal visible={showSetModal} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Set Balance</Text>
+            <Text variant="caption" color={Colors.success} align="center">
+              Current Fund
+            </Text>
+          </Card>
 
-            <TextInput
-              placeholder="Enter current balance"
-              value={balance}
-              onChangeText={setBalance}
-              keyboardType="numeric"
-              style={styles.modalInput}
-              placeholderTextColor="#aaa"
-            />
+          {/* Admin Actions */}
 
-            {error ? (
-              <Text style={{ color: "red", marginBottom: 10 }}>{error}</Text>
-            ) : null}
+          {currentUser?.role === "ADMIN" && (
+            <View style={styles.actionRow}>
+              <Button
+                title="Set Balance"
+                variant="secondary"
+                leftIcon="wallet-outline"
+                style={styles.actionButton}
+                onPress={() => {
+                  setError("");
+                  setShowSetModal(true);
+                }}
+              />
 
-            <Pressable
-              style={styles.modalBtn}
-              onPress={async () => {
-                const value = Number(balance);
+              <Button
+                title="Spend"
+                variant="danger"
+                leftIcon="card-outline"
+                style={styles.actionButton}
+                onPress={() => {
+                  setError("");
+                  setShowModal(true);
+                }}
+              />
+            </View>
+          )}
 
-                if (!balance || value < 0) {
-                  setError("Enter valid amount");
-                  return;
-                }
-                await updateFundAPI(selectedGroup?.id, {
-                  fund: value,
-                  transactions: [
-                    {
-                      id: Date.now().toString(),
-                      type: "ADD",
-                      title: "Manual balance set",
-                      amount: value,
-                      date: new Date().toISOString(),
-                    },
-                    ...transactions,
-                  ],
-                });
+          {/* Transactions */}
 
-                // dispatch(setFund(value));
+          <FlatList
+            data={transactions}
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContent}
+            ListEmptyComponent={
+              <Card style={styles.emptyCard}>
+                <Icon
+                  name="receipt-outline"
+                  size={56}
+                  color={Colors.textMuted}
+                />
 
-                setBalance("");
-                setError("");
-                setShowSetModal(false);
-              }}
-            >
-              <Text style={styles.modalBtnText}>Confirm</Text>
-            </Pressable>
+                <Text
+                  variant="subtitle"
+                  weight="600"
+                  align="center"
+                  style={styles.emptyTitle}
+                >
+                  No Transactions
+                </Text>
 
-            <Pressable onPress={() => setShowSetModal(false)}>
-              <Text style={styles.cancelText}>Cancel</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
-      <Modal visible={showModal} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Add Spending</Text>
+                <Text
+                  variant="bodySmall"
+                  align="center"
+                  color={Colors.textSecondary}
+                >
+                  Fund history will appear here.
+                </Text>
+              </Card>
+            }
+            renderItem={({ item }) => {
+              const isPositive =
+                ["ADD", "EVENT"].includes(item.type) && item.amount > 0;
 
-            <TextInput
-              placeholder="Spending on"
-              value={title}
-              onChangeText={setTitle}
-              style={styles.modalInput}
-              placeholderTextColor="#aaa"
-            />
+              const amountColor = isPositive ? Colors.success : Colors.danger;
 
-            <TextInput
-              placeholder="Amount"
-              value={amount}
-              onChangeText={setAmount}
-              keyboardType="numeric"
-              style={styles.modalInput}
-              placeholderTextColor="#aaa"
-            />
+              const icon =
+                item.type === "SPEND"
+                  ? "card-outline"
+                  : item.type === "EVENT"
+                  ? "football-outline"
+                  : "wallet-outline";
 
-            {error ? (
-              <Text style={{ color: "red", marginBottom: 10 }}>{error}</Text>
-            ) : null}
+              return (
+                <Card style={styles.transactionCard}>
+                  <View style={styles.transactionRow}>
+                    <View style={styles.transactionLeft}>
+                      <Icon name={icon} color={amountColor} />
 
-            <Pressable style={styles.modalBtn} onPress={handleSpend}>
-              <Text style={styles.modalBtnText}>Confirm</Text>
-            </Pressable>
+                      <View>
+                        <Text variant="body" weight="600">
+                          {item.title}
+                        </Text>
 
-            <Pressable onPress={() => setShowModal(false)}>
-              <Text style={styles.cancelText}>Cancel</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
-    </View>
+                        <Text variant="caption" color={Colors.textSecondary}>
+                          {new Date(item.date).toLocaleDateString()}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <Text variant="subtitle" weight="700" color={amountColor}>
+                      {isPositive ? "+" : "-"}₹{Math.abs(item.amount)}
+                    </Text>
+                  </View>
+                </Card>
+              );
+            }}
+          />
+          <Modal
+            visible={showSetModal}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowSetModal(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <Card style={styles.modalCard}>
+                <Text variant="h3" weight="700" align="center">
+                  Set Balance
+                </Text>
+
+                <Text
+                  variant="bodySmall"
+                  color={Colors.textSecondary}
+                  align="center"
+                  style={styles.modalSubtitle}
+                >
+                  Update the current fund balance.
+                </Text>
+
+                <Input
+                  label="Current Balance"
+                  value={balance}
+                  onChangeText={setBalance}
+                  keyboardType="numeric"
+                  leftIcon="wallet-outline"
+                />
+
+                {!!error && (
+                  <Text
+                    variant="caption"
+                    color={Colors.danger}
+                    style={styles.error}
+                  >
+                    {error}
+                  </Text>
+                )}
+
+                <Button
+                  title="Confirm"
+                  onPress={async () => {
+                    const value = Number(balance);
+
+                    if (!balance || value < 0) {
+                      setError("Enter valid amount");
+                      return;
+                    }
+
+                    await updateFundAPI(selectedGroup?.id, {
+                      fund: value,
+                      transactions: [
+                        {
+                          id: Date.now().toString(),
+                          type: "ADD",
+                          title: "Manual balance set",
+                          amount: value,
+                          date: new Date().toISOString(),
+                        },
+                        ...transactions,
+                      ],
+                    });
+                    setBalance("");
+                    setError("");
+                    setShowSetModal(false);
+                  }}
+                />
+
+                <Button
+                  title="Cancel"
+                  variant="ghost"
+                  onPress={() => {
+                    setError("");
+                    setShowSetModal(false);
+                  }}
+                  style={styles.cancelButton}
+                />
+              </Card>
+            </View>
+          </Modal>
+
+          {/* ---------- Spend Modal ---------- */}
+
+          <Modal
+            visible={showModal}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowModal(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <Card style={styles.modalCard}>
+                <Text variant="h3" weight="700" align="center">
+                  Add Spending
+                </Text>
+
+                <Text
+                  variant="bodySmall"
+                  color={Colors.textSecondary}
+                  align="center"
+                  style={styles.modalSubtitle}
+                >
+                  Record a new expense from the fund.
+                </Text>
+
+                <Input
+                  label="Spending On"
+                  value={title}
+                  onChangeText={setTitle}
+                  leftIcon="document-text-outline"
+                />
+
+                <Input
+                  label="Amount"
+                  value={amount}
+                  onChangeText={setAmount}
+                  keyboardType="numeric"
+                  leftIcon="cash-outline"
+                  placeholder="Enter amount"
+                />
+
+                {!!error && (
+                  <Text
+                    variant="caption"
+                    color={Colors.danger}
+                    style={styles.error}
+                  >
+                    {error}
+                  </Text>
+                )}
+
+                <Button
+                  title="Confirm"
+                  variant="danger"
+                  onPress={handleSpend}
+                />
+
+                <Button
+                  title="Cancel"
+                  variant="ghost"
+                  onPress={() => {
+                    setError("");
+                    setShowModal(false);
+                  }}
+                  style={styles.cancelButton}
+                />
+              </Card>
+            </View>
+          </Modal>
+        </KeyboardAvoidingView>
+      </ScreenContainer>
+    </AnimatedBackground>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: Spacing.lg,
+  },
+
+  balanceCard: {
+    marginBottom: Spacing.xl,
+    alignItems: "center",
+    ...Shadows.md,
+  },
+
+  balanceAmount: {
+    marginVertical: Spacing.sm,
+  },
+
+  actionRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+
+  actionButton: {
+    flex: 1,
+  },
+
+  listContent: {
+    paddingBottom: 120,
+  },
+
+  emptyCard: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Spacing.xxxl,
+    marginTop: Spacing.xxl,
+  },
+
+  emptyTitle: {
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.sm,
+  },
+
+  transactionCard: {
+    marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+
+  transactionRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  transactionLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    gap: Spacing.md,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: Spacing.xl,
+    backgroundColor: "rgba(0,0,0,0.6)",
+  },
+
+  modalCard: {
+    width: "100%",
+    maxWidth: 420,
+    borderRadius: Radius.xl,
+    ...Shadows.lg,
+  },
+
+  modalSubtitle: {
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.xl,
+  },
+
+  error: {
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+
+  cancelButton: {
+    marginTop: Spacing.md,
+  },
+});
