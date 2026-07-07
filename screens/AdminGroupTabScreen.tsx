@@ -26,6 +26,7 @@ export default function AdminGroupTabScreen() {
           shadowOpacity: 0,
           borderBottomWidth: 1,
           borderBottomColor: Colors.border,
+          paddingTop: 50,
         },
 
         tabBarIndicatorStyle: {

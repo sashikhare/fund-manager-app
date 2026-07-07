@@ -1,6 +1,7 @@
 export { default as AnimatedCircle } from "./Animated/AnimatedCircle";
 export { default as Interactive } from "./Animated/Interactive";
 export { default as AnimatedBackground } from "./Background";
+export { default as BottomTab } from "./BottomTab";
 export { default as Brand } from "./Brand";
 export { default as Button } from "./Button";
 export { default as Card } from "./Card";

@@ -4,7 +4,6 @@ import { RootState, store } from "./redux/store";
 
 import { NavigationContainer } from "@react-navigation/native";
 
-import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import EventScreen from "./screens/EventScreen";
 import FundScreen from "./screens/FundScreen";
@@ -16,6 +15,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { BottomTab } from "./components";
 import { auth, db } from "./firebase/firebase";
 import { setUser } from "./redux/appSlice";
 import AccountScreen from "./screens/AccountScreen";
@@ -48,22 +48,10 @@ const MainTabs = () => {
   const user = useSelector((state: RootState) => state.app.currentUser);
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ color, size }) => {
-          let iconName: any;
-
-          if (route.name === "Members") iconName = "people";
-          if (route.name === "Fund") iconName = "wallet";
-          if (route.name === "Events") iconName = "calendar";
-          if (route.name === "Account") iconName = "person";
-          if (route.name === "Groups") iconName = "people-outline";
-          if (route.name === "Admin") iconName = "settings";
-
-          return <Ionicons name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: "#007AFF",
-        tabBarInactiveTintColor: "gray",
-      })}
+      tabBar={(props) => <BottomTab {...props} />}
+      screenOptions={{
+        headerShown: false,
+      }}
     >
       {user?.role === "SUPER_ADMIN" && (
         <>
