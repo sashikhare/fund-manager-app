@@ -1,9 +1,22 @@
 import React, { useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet
+} from "react-native";
 import { useSelector } from "react-redux";
+
 import { createGroupAPI } from "../api/groupApi";
+import {
+  Button,
+  Card,
+  Input
+} from "../components";
 import { RootState } from "../redux/store";
-import { styles } from "../styles/mainStyles";
+import {
+  Spacing,
+} from "../theme";
 
 export default function CreateGroupScreen() {
   const user = useSelector((state: RootState) => state.app.currentUser);
@@ -30,16 +43,92 @@ export default function CreateGroupScreen() {
   };
 
   return (
-    <View style={{ padding: 16 }}>
-      <TextInput placeholder="Group Name" value={name} onChangeText={setName} style={styles.modalInput} />
-      <TextInput placeholder="Opening Balance" value={openingBalance} onChangeText={setOpeningBalance} style={styles.modalInput} />
-      <TextInput placeholder="Member Fee" value={memberFee} onChangeText={setMemberFee} style={styles.modalInput} />
-      <TextInput placeholder="Guest Fee" value={guestFee} onChangeText={setGuestFee} style={styles.modalInput} />
-      <TextInput placeholder="No Show Fee" value={noShowFee} onChangeText={setNoShowFee} style={styles.modalInput} />
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+      >
+        <Card>
+          <Input
+            label="Group Name"
+            placeholder="Enter group name"
+            value={name}
+            onChangeText={setName}
+            leftIcon="people-outline"
+            containerStyle={styles.input}
+          />
 
-      <Pressable style={styles.primaryBtn} onPress={handleCreate}>
-        <Text style={styles.primaryBtnText}>Create Group</Text>
-      </Pressable>
-    </View>
+          <Input
+            label="Opening Balance"
+            placeholder="Enter opening balance"
+            value={openingBalance}
+            onChangeText={setOpeningBalance}
+            keyboardType="numeric"
+            leftIcon="wallet-outline"
+            containerStyle={styles.input}
+          />
+
+          <Input
+            label="Member Fee"
+            placeholder="Enter member fee"
+            value={memberFee}
+            onChangeText={setMemberFee}
+            keyboardType="numeric"
+            leftIcon="person-outline"
+            containerStyle={styles.input}
+          />
+
+          <Input
+            label="Guest Fee"
+            placeholder="Enter guest fee"
+            value={guestFee}
+            onChangeText={setGuestFee}
+            keyboardType="numeric"
+            leftIcon="person-add-outline"
+            containerStyle={styles.input}
+          />
+
+          <Input
+            label="No Show Fee"
+            placeholder="Enter no show fee"
+            value={noShowFee}
+            onChangeText={setNoShowFee}
+            keyboardType="numeric"
+            leftIcon="close-circle-outline"
+            containerStyle={styles.input}
+          />
+
+          <Button
+            title="Create Group"
+            leftIcon="add-circle-outline"
+            onPress={handleCreate}
+          />
+        </Card>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+
+  content: {
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing.xxxl,
+  },
+
+  subtitle: {
+    marginTop: Spacing.xs,
+    marginBottom: Spacing.xl,
+  },
+
+  input: {
+    marginBottom: Spacing.lg,
+  },
+});

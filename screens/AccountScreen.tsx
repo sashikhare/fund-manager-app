@@ -1,12 +1,29 @@
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useSelector } from "react-redux";
+
 import { logoutAPI } from "../api/authApi";
+import {
+  AnimatedBackground,
+  Button,
+  Card,
+  Icon,
+  ScreenContainer,
+  Text,
+} from "../components";
 import { RootState } from "../redux/store";
-import { styles } from "../styles/mainStyles";
+import {
+  Colors,
+  Radius,
+  Shadows,
+  Spacing,
+} from "../theme";
 
 export default function AccountScreen() {
-  const user = useSelector((state: RootState) => state.app.currentUser);
+  const user = useSelector(
+    (state: RootState) => state.app.currentUser
+  );
+
   const selectedGroup = useSelector(
     (state: RootState) => state.app.selectedGroup
   );
@@ -15,28 +32,132 @@ export default function AccountScreen() {
     await logoutAPI();
   };
 
+  const initials = `${user?.firstName?.charAt(0) || ""}${
+    user?.lastName?.charAt(0) || ""
+  }`.toUpperCase();
+
   return (
-    <View style={{ flex: 1, padding: 20 }}>
-      {/* 👤 User Info */}
-      <View style={{ marginBottom: 30 }}>
-        <Text style={{ fontSize: 20, fontWeight: "bold" }}>
-          {user?.firstName} {user?.lastName}
-        </Text>
+    <AnimatedBackground>
+      <ScreenContainer>
+        <View style={styles.container}>
+          {/* Avatar */}
+          <View style={styles.avatar}>
+            <Text
+              variant="h2"
+              weight="700"
+              color={Colors.primary}
+            >
+              {initials}
+            </Text>
+          </View>
 
-        <Text style={{ color: "#666", marginTop: 4 }}>Role: {user?.role}</Text>
-      </View>
-      <View style={styles.memberCard}>
-        <Text style={styles.memberName}>Selected Group</Text>
+          {/* Name */}
+          <Text
+            variant="h2"
+            weight="700"
+            align="center"
+            style={styles.name}
+          >
+            {user?.firstName} {user?.lastName}
+          </Text>
 
-        <Text style={{ color: "#aaa", marginTop: 4 }}>
-          {selectedGroup?.name || "No group selected"}
-        </Text>
-      </View>
+          {/* Role */}
+          <View style={styles.roleBadge}>
+            <Text
+              variant="bodySmall"
+              weight="600"
+              color={Colors.primary}
+            >
+              {user?.role}
+            </Text>
+          </View>
 
-      {/* 🚪 Logout Button */}
-      <Pressable style={styles.primaryBtn} onPress={handleLogout}>
-        <Text style={styles.primaryBtnText}>Logout</Text>
-      </Pressable>
-    </View>
+          {/* Group Card */}
+          <Card style={styles.groupCard}>
+            <View style={styles.row}>
+              <Icon
+                name="people-outline"
+                color={Colors.primary}
+              />
+
+              <Text
+                variant="subtitle"
+                weight="600"
+              >
+                Current Group
+              </Text>
+            </View>
+
+            <Text
+              variant="body"
+              color={Colors.textSecondary}
+              style={styles.groupName}
+            >
+              {selectedGroup?.name || "No group selected"}
+            </Text>
+          </Card>
+
+          {/* Logout */}
+          <Button
+            title="Logout"
+            variant="danger"
+            leftIcon="log-out-outline"
+            onPress={handleLogout}
+            style={styles.logout}
+          />
+        </View>
+      </ScreenContainer>
+    </AnimatedBackground>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+  },
+
+  avatar: {
+    width: 110,
+    height: 110,
+    borderRadius: Radius.full,
+    alignSelf: "center",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: Colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    ...Shadows.md,
+  },
+
+  name: {
+    marginTop: Spacing.xl,
+  },
+
+  roleBadge: {
+    alignSelf: "center",
+    marginTop: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.full,
+    backgroundColor: Colors.primaryLight,
+  },
+
+  groupCard: {
+    marginTop: Spacing.xxxl,
+  },
+
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+
+  groupName: {
+    marginTop: Spacing.md,
+  },
+
+  logout: {
+    marginTop: Spacing.xxxl,
+  },
+});
