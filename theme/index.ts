@@ -3,6 +3,7 @@ export * from "./animation";
 export * from "./colors";
 export * from "./gradients";
 export * from "./icon";
+export { Layout } from "./Layout";
 export * from "./opacity";
 export * from "./radius";
 export * from "./shadows";
