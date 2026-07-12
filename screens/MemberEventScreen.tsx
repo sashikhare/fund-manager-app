@@ -1,134 +1,424 @@
-import React, { useEffect, useState } from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import React, {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  FlatList,
+  View,
+} from "react-native";
 
 import { useSelector } from "react-redux";
 
-import { RootState } from "../redux/store";
-import { styles } from "../styles/mainStyles";
-
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  query,
+  where,
+} from "firebase/firestore";
 
 import { joinEventAPI } from "@/api/eventAPI";
+
 import { db } from "../firebase/firebase";
 
+import {
+  Button,
+  Card,
+  Icon,
+  ScreenContainer,
+  Text,
+} from "../components";
+
+import { RootState } from "../redux/store";
+
+import {
+  Colors,
+  Spacing,
+} from "../theme";
+
 export default function MemberEventScreen() {
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] =
+    useState<any[]>([]);
 
-  const currentUser = useSelector((state: RootState) => state.app.currentUser);
+  const currentUser =
+    useSelector(
+      (state: RootState) =>
+        state.app.currentUser
+    );
 
-  const selectedGroup = useSelector(
-    (state: RootState) => state.app.selectedGroup
-  );
+  const selectedGroup =
+    useSelector(
+      (state: RootState) =>
+        state.app.selectedGroup
+    );
 
   useEffect(() => {
     if (!selectedGroup?.id) return;
 
     const q = query(
       collection(db, "events"),
-      where("groupId", "==", selectedGroup?.id)
+      where(
+        "groupId",
+        "==",
+        selectedGroup.id
+      )
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+    const unsubscribe =
+      onSnapshot(q, (snapshot) => {
+        const data =
+          snapshot.docs.map(
+            (doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            })
+          );
 
-      setEvents(data);
-    });
+        setEvents(data);
+      });
 
-    return () => unsubscribe();
+    return unsubscribe;
   }, [selectedGroup]);
 
-  const handleJoin = async (eventId: string) => {
-    try {
-      await joinEventAPI(eventId, currentUser?.uid, selectedGroup?.id);
+  const handleJoin =
+    async (eventId: string) => {
+      try {
+        await joinEventAPI(
+          eventId,
+          currentUser?.uid,
+          selectedGroup?.id
+        );
 
-      alert("Joined Successfully");
-    } catch (e: any) {
-      alert(e.message);
-    }
-  };
+        alert(
+          "Joined Successfully"
+        );
+      } catch (e: any) {
+        alert(e.message);
+      }
+    };
 
   return (
-    <View style={{ flex: 1 }}>
+    <ScreenContainer>
       <FlatList
         data={events}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) =>
+          item.id
+        }
+        showsVerticalScrollIndicator={
+          false
+        }
         contentContainerStyle={{
-          padding: 16,
-          paddingBottom: 100,
+          paddingHorizontal:
+            Spacing.lg,
+          paddingBottom: 120,
+          flexGrow:
+            events.length === 0
+              ? 1
+              : undefined,
         }}
-        ListEmptyComponent={() => (
-          <View
-            style={{
-              marginTop: 100,
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ color: "#999" }}>No Events Found</Text>
-          </View>
-        )}
-        renderItem={({ item }) => {
+                renderItem={({ item }) => {
           const joinedMember = item.members?.find(
-            (m: any) => m.memberId === currentUser?.uid
+            (m: any) =>
+              m.memberId === currentUser?.uid
           );
+
           return (
-            <View style={styles.memberCard}>
-              <Text style={styles.memberName}>{item.name}</Text>
+            <Card
+              style={{
+                marginBottom: Spacing.lg,
+              }}
+            >
+              {/* Header */}
 
-              <Text
+              <View
                 style={{
-                  color: "#999",
-                  marginTop: 6,
+                  flexDirection: "row",
+                  alignItems: "center",
                 }}
               >
-                Date: {new Date(item.date).toLocaleDateString()}
-              </Text>
+                {/* Avatar */}
 
-              <Text
+                <View
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: 28,
+                    backgroundColor: "#1A2234",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginRight: Spacing.md,
+                  }}
+                >
+                  <Icon
+                    name="football-outline"
+                    size={26}
+                    color={Colors.primary}
+                  />
+                </View>
+
+                {/* Event */}
+
+                <View
+                  style={{
+                    flex: 1,
+                  }}
+                >
+                  <Text
+                    variant="subtitle"
+                    weight="700"
+                  >
+                    {item.name}
+                  </Text>
+
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginTop: 2,
+                    }}
+                  >
+                    <Icon
+                      name="calendar-outline"
+                      size={14}
+                      color={Colors.textSecondary}
+                    />
+
+                    <Text
+                      variant="caption"
+                      color={
+                        Colors.textSecondary
+                      }
+                      style={{
+                        marginLeft: 4,
+                      }}
+                    >
+                      {new Date(
+                        item.date
+                      ).toDateString()}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Divider */}
+
+              <View
                 style={{
-                  color: "#999",
-                  marginTop: 4,
+                  height: 1,
+                  backgroundColor:
+                    Colors.border,
+                  marginVertical:
+                    Spacing.lg,
+                }}
+              />
+
+              {/* Stats */}
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent:
+                    "space-between",
                 }}
               >
-                Turf Amount: ₹{item.turfBookingAmount}
-              </Text>
+                {/* Turf */}
 
-              <Text
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: "center",
+                  }}
+                >
+                  <Icon
+                    name="cash-outline"
+                    size={18}
+                    color={
+                      Colors.primary
+                    }
+                  />
+
+                  <Text
+                    variant="h3"
+                    weight="700"
+                    style={{
+                      marginTop: 6,
+                    }}
+                  >
+                    ₹
+                    {
+                      item.turfBookingAmount
+                    }
+                  </Text>
+
+                  <Text
+                    variant="caption"
+                    color={
+                      Colors.textSecondary
+                    }
+                  >
+                    Turf Cost
+                  </Text>
+                </View>
+
+                {/* Joined */}
+
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: "center",
+                  }}
+                >
+                  <Icon
+                    name="people-outline"
+                    size={18}
+                    color={
+                      Colors.success
+                    }
+                  />
+
+                  <Text
+                    variant="h3"
+                    weight="700"
+                    style={{
+                      marginTop: 6,
+                    }}
+                  >
+                    {
+                      item.members
+                        ?.length || 0
+                    }
+                  </Text>
+
+                  <Text
+                    variant="caption"
+                    color={
+                      Colors.textSecondary
+                    }
+                  >
+                    Joined
+                  </Text>
+                </View>
+              </View>
+
+              {/* Divider */}
+
+              <View
                 style={{
-                  color: "#999",
-                  marginTop: 4,
+                  height: 1,
+                  backgroundColor:
+                    Colors.border,
+                  marginVertical:
+                    Spacing.lg,
                 }}
-              >
-                Joined: {item.members?.length || 0}
-              </Text>
+              />
+
+              {/* Action */}
 
               {joinedMember ? (
                 <View
                   style={{
-                    marginTop: 12,
-                    backgroundColor: "green",
-                    padding: 10,
-                    borderRadius: 8,
+                    alignItems:
+                      "center",
                   }}
                 >
-                  <Text style={{ color: "#fff" }}>
-                    Joined as {joinedMember.membershipType}
-                  </Text>
+                  <View
+                    style={{
+                      flexDirection:
+                        "row",
+                      alignItems:
+                        "center",
+                      backgroundColor:
+                        "#143D26",
+                      paddingHorizontal: 18,
+                      paddingVertical: 10,
+                      borderRadius: 999,
+                    }}
+                  >
+                    <Icon
+                      name="checkmark-circle"
+                      size={18}
+                      color="#32D583"
+                    />
+
+                    <Text
+                      variant="bodySmall"
+                      weight="700"
+                      color="#32D583"
+                      style={{
+                        marginLeft: 8,
+                      }}
+                    >
+                      Joined as{" "}
+                      {
+                        joinedMember.membershipType
+                      }
+                    </Text>
+                  </View>
                 </View>
               ) : (
-                <Pressable
-                  style={styles.primaryBtn}
-                  onPress={() => handleJoin(item.id)}
-                >
-                  <Text style={styles.primaryBtnText}>Join Event</Text>
-                </Pressable>
+                <Button
+                  title="Join Event"
+                  leftIcon="log-in-outline"
+                  fullWidth
+                  onPress={() =>
+                    handleJoin(item.id)
+                  }
+                />
               )}
-            </View>
+            </Card>
           );
         }}
+                ListEmptyComponent={
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              paddingHorizontal: Spacing.xl,
+            }}
+          >
+            <Icon
+              name="football-outline"
+              size={72}
+              color={Colors.textMuted}
+            />
+
+            <Text
+              variant="h3"
+              align="center"
+              style={{
+                marginTop: Spacing.lg,
+              }}
+            >
+              No Events Available
+            </Text>
+
+            <Text
+              variant="body"
+              align="center"
+              color={Colors.textSecondary}
+              style={{
+                marginTop: Spacing.sm,
+              }}
+            >
+              There are no upcoming events
+              for this group yet.
+            </Text>
+
+            <Text
+              variant="caption"
+              align="center"
+              color={Colors.textMuted}
+              style={{
+                marginTop: Spacing.xs,
+              }}
+            >
+              Ask your group admin to create
+              a new event.
+            </Text>
+          </View>
+        }
       />
-    </View>
+    </ScreenContainer>
   );
 }
