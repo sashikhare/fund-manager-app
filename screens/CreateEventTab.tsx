@@ -5,65 +5,87 @@ import {
   FlatList,
   Modal,
   Platform,
-  Pressable,
   ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
   ToastAndroid,
   View,
 } from "react-native";
-import { useDispatch, useSelector } from "react-redux";
+
+import { useSelector } from "react-redux";
+
 import { createEventAPI } from "../api/eventAPI";
 import { getEligibleEventMembersAPI } from "../api/memberApi";
+
+import {
+  Button,
+  Card,
+  Icon,
+  Input,
+  ScreenContainer,
+  Text,
+} from "../components";
+
 import { RootState } from "../redux/store";
-import { styles } from "../styles/mainStyles";
+
+import {
+  Colors,
+  Shadows,
+  Spacing,
+} from "../theme";
 
 export default function CreateEventTab() {
-  const dispatch = useDispatch();
-  const members = useSelector((state: RootState) => state.app.members);
   const selectedGroup = useSelector(
     (state: RootState) => state.app.selectedGroup
   );
-  const [groupMembers, setGroupMembers] = useState<any[]>([]);
-  const [eventName, setEventName] = useState("");
-  const [turfAmount, setTurfAmount] = useState("");
-  const [eventDate, setEventDate] = useState<Date | null>(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
-  const [showMemberModal, setShowMemberModal] = useState(false);
+
+  const [groupMembers, setGroupMembers] =
+    useState<any[]>([]);
+
+  const [eventName, setEventName] =
+    useState("");
+
+  const [turfAmount, setTurfAmount] =
+    useState("");
+
+  const [eventDate, setEventDate] =
+    useState<Date | null>(null);
+
+  const [showDatePicker, setShowDatePicker] =
+    useState(false);
+
+  const [selectedMembers, setSelectedMembers] =
+    useState<string[]>([]);
+
+  const [showMemberModal, setShowMemberModal] =
+    useState(false);
 
   useEffect(() => {
     if (!selectedGroup?.id) return;
-  
+
     const loadMembers = async () => {
-      const data = await getEligibleEventMembersAPI(
-        selectedGroup.id
-      );
-  
+      const data =
+        await getEligibleEventMembersAPI(
+          selectedGroup.id
+        );
+
       setGroupMembers(data);
     };
-  
+
     loadMembers();
   }, [selectedGroup]);
-  
 
   const toggleMember = (id: string) => {
-    setSelectedMembers(
-      (prev) =>
-        prev.includes(id)
-          ? prev.filter((m) => m !== id) // remove
-          : [...prev, id] // add
+    setSelectedMembers((prev) =>
+      prev.includes(id)
+        ? prev.filter((m) => m !== id)
+        : [...prev, id]
     );
   };
 
   const handleCreateEvent = async () => {
-    
     if (
       !eventName ||
       !turfAmount ||
       !eventDate
-      // selectedMembers.length === 0
     ) {
       alert("Fill all fields");
       return;
@@ -73,7 +95,7 @@ export default function CreateEventTab() {
       alert("Please select a group first");
       return;
     }
-    
+
     const newEvent = {
       name: eventName,
       date: eventDate.toISOString(),
@@ -81,20 +103,25 @@ export default function CreateEventTab() {
         memberId: id,
         paid: 0,
       })),
-      turfBookingAmount: Number(turfAmount),
+      turfBookingAmount: Number(
+        turfAmount
+      ),
       isSettled: false,
-      groupId: selectedGroup?.id,
+      groupId: selectedGroup.id,
     };
-  
+
     await createEventAPI(newEvent);
-  
-  
-    alert("Event Created");
 
     if (Platform.OS === "android") {
-      ToastAndroid.show("Event Created", ToastAndroid.SHORT);
+      ToastAndroid.show(
+        "Event Created",
+        ToastAndroid.SHORT
+      );
     } else {
-      Alert.alert("Success", "Event Created");
+      Alert.alert(
+        "Success",
+        "Event Created"
+      );
     }
 
     setEventName("");
@@ -104,133 +131,491 @@ export default function CreateEventTab() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.heading}>Create Event</Text>
-
-      {/* Event Name */}
-      <Text style={styles.label}>Event Name</Text>
-      <TextInput
-        placeholder="e.g. Turf Match"
-        placeholderTextColor="#999"
-        value={eventName}
-        onChangeText={setEventName}
-        style={styles.input}
-      />
-
-      {/* Turf Amount */}
-      <Text style={styles.label}>Turf Booking Amount</Text>
-      <TextInput
-        placeholder="₹ 2000"
-        placeholderTextColor="#999"
-        value={turfAmount}
-        onChangeText={setTurfAmount}
-        keyboardType="numeric"
-        style={styles.input}
-      />
-
-      {/* Date */}
-      <Text style={styles.label}>Event Date</Text>
-
-      {Platform.OS === "web" ? (
-        <input
-          type="date"
-          value={eventDate ? eventDate.toISOString().split("T")[0] : ""}
-          onChange={(e) => {
-            const selected = new Date(e.target.value);
-            setEventDate(selected);
-          }}
+    <ScreenContainer>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          padding: Spacing.xl,
+          paddingBottom: 140,
+        }}
+      >
+        <Card
           style={{
-            padding: 12,
-            borderRadius: 8,
-            border: "1px solid #ccc",
-            marginTop: 10,
+            ...Shadows.sm,
           }}
-        />
-      ) : (
-        <>
-          <Pressable
-            style={styles.input}
-            onPress={() => setShowDatePicker(true)}
-          >
-            <Text style={{ color: eventDate ? "#000" : "#999" }}>
-              {eventDate ? eventDate.toDateString() : "Select Date"}
-            </Text>
-          </Pressable>
-
-          {showDatePicker && (
-            <DateTimePicker
-              value={eventDate || new Date()}
-              mode="date"
-              onChange={(e, d) => {
-                setShowDatePicker(false);
-                if (d) setEventDate(d);
-              }}
-            />
-          )}
-        </>
-      )}
-
-      {/* Members */}
-      <Text style={styles.label}>Members (Optional)</Text>
-      <Pressable style={styles.input} onPress={() => setShowMemberModal(true)}>
-        <Text style={{ color: "#000" }}>
-          {selectedMembers.length > 0
-            ? `${selectedMembers.length} members selected`
-            : "Select Members"}
-        </Text>
-      </Pressable>
-
-      <Modal visible={showMemberModal} transparent animationType="fade">
-        <View style={styles.overlayBackground}>
-          {/* Only THIS closes modal */}
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setShowMemberModal(false)}
+        >
+          <Input
+            label="Event Name"
+            value={eventName}
+            onChangeText={setEventName}
+            leftIcon="football-outline"
+            placeholder="Weekly Turf Match"
           />
 
-          {/* IMPORTANT: prevent click-through */}
-          <Pressable style={styles.overlayCard}>
-            {/* Header */}
-            <View style={styles.overlayHeader}>
-              <Text style={styles.overlayTitle}>Select Members</Text>
+          <Input
+            label="Turf Booking Amount"
+            value={turfAmount}
+            onChangeText={setTurfAmount}
+            keyboardType="numeric"
+            leftIcon="cash-outline"
+            placeholder="₹2000"
+          />
 
-              <Pressable onPress={() => setShowMemberModal(false)}>
-                <Text style={styles.doneText}>Done</Text>
-              </Pressable>
+          <Text
+            variant="label"
+            style={{
+              marginBottom:
+                Spacing.sm,
+            }}
+          >
+            Event Date
+          </Text>
+
+          {Platform.OS === "web" ? (
+            <input
+              type="date"
+              value={
+                eventDate
+                  ? eventDate
+                      .toISOString()
+                      .split("T")[0]
+                  : ""
+              }
+              onChange={(e) =>
+                setEventDate(
+                  new Date(
+                    e.target.value
+                  )
+                )
+              }
+              style={{
+                padding: 14,
+                borderRadius: 14,
+                border:
+                  "1px solid #2B3445",
+                background:
+                  "#181C24",
+                color: "#fff",
+                marginBottom: 20,
+              }}
+            />
+          ) : (
+            <>
+              <Button
+                title={
+                  eventDate
+                    ? eventDate.toDateString()
+                    : "Select Event Date"
+                }
+                variant="outline"
+                leftIcon="calendar-outline"
+                onPress={() =>
+                  setShowDatePicker(
+                    true
+                  )
+                }
+              />
+
+              {showDatePicker && (
+                <DateTimePicker
+                  value={
+                    eventDate ||
+                    new Date()
+                  }
+                  mode="date"
+                  onChange={(
+                    e,
+                    date
+                  ) => {
+                    setShowDatePicker(
+                      false
+                    );
+
+                    if (date)
+                      setEventDate(
+                        date
+                      );
+                  }}
+                />
+              )}
+            </>
+          )}
+
+          <Button
+            title={
+              selectedMembers.length
+                ? `${selectedMembers.length} Members Selected`
+                : "Select Members"
+            }
+            variant="outline"
+            leftIcon="people-outline"
+            onPress={() =>
+              setShowMemberModal(
+                true
+              )
+            }
+            style={{
+              marginTop:
+                Spacing.lg,
+            }}
+          />
+                {/* ---------------- Member Selection Modal ---------------- */}
+
+      <Modal
+        visible={showMemberModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowMemberModal(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            padding: Spacing.xl,
+            backgroundColor: "rgba(0,0,0,0.65)",
+          }}
+        >
+          <Card
+            style={{
+              maxHeight: "75%",
+              ...Shadows.lg,
+            }}
+          >
+            {/* Header */}
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: Spacing.lg,
+              }}
+            >
+              <Text variant="h3">
+                Select Members
+              </Text>
+
+              <Button
+                title="Done"
+                variant="ghost"
+                onPress={() =>
+                  setShowMemberModal(false)
+                }
+              />
             </View>
+
             <FlatList
               data={groupMembers}
               keyExtractor={(item) => item.id}
-              style={{ maxHeight: 300 }}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => (
+                <View
+                  style={{
+                    height: Spacing.md,
+                  }}
+                />
+              )}
               renderItem={({ item }) => {
-                const isSelected = selectedMembers.includes(item.id);
+                const isSelected =
+                  selectedMembers.includes(
+                    item.id
+                  );
 
                 return (
-                  <Pressable
-                    onPress={() => toggleMember(item.id)}
-                    style={[
-                      styles.overlayItem,
-                      isSelected && styles.overlayItemSelected,
-                    ]}
+                  <Card
+                    onPress={() =>
+                      toggleMember(item.id)
+                    }
+                    style={{
+                      backgroundColor:
+                        Colors.surface,
+
+                      borderWidth: isSelected
+                        ? 2
+                        : 1,
+
+                      borderColor: isSelected
+                        ? Colors.primary
+                        : Colors.border,
+                    }}
                   >
-                    <Text style={{ color: "#fff", fontSize: 15 }}>
-                      {item.firstName} {item.lastName}
-                    </Text>
-                    <Text style={{ color: "#fff", fontSize: 15 }}>
-                      {isSelected ? "✔️" : ""}
-                    </Text>
-                  </Pressable>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                      }}
+                    >
+                      {/* Avatar */}
+
+                      <View
+                        style={{
+                          width: 46,
+                          height: 46,
+                          borderRadius: 23,
+
+                          backgroundColor:
+                            "#1A2234",
+
+                          justifyContent:
+                            "center",
+
+                          alignItems:
+                            "center",
+
+                          marginRight:
+                            Spacing.md,
+                        }}
+                      >
+                        <Text
+                          variant="subtitle"
+                          color={
+                            Colors.primary
+                          }
+                          weight="700"
+                        >
+                          {(
+                            item.firstName?.[0] ||
+                            ""
+                          ).toUpperCase()}
+                          {(
+                            item.lastName?.[0] ||
+                            ""
+                          ).toUpperCase()}
+                        </Text>
+                      </View>
+
+                      {/* Name */}
+
+                      <View
+                        style={{
+                          flex: 1,
+                        }}
+                      >
+                        <Text
+                          variant="subtitle"
+                          weight="700"
+                        >
+                          {item.firstName}{" "}
+                          {item.lastName}
+                        </Text>
+
+                        <Text
+                          variant="caption"
+                          color={
+                            Colors.textSecondary
+                          }
+                        >
+                          {item.membershipType ===
+                          "GUEST"
+                            ? "Guest"
+                            : "Member"}
+                        </Text>
+                      </View>
+
+                      {/* Check */}
+
+                      {isSelected && (
+                        <View
+                          style={{
+                            width: 34,
+                            height: 34,
+                            borderRadius: 17,
+
+                            backgroundColor:
+                              Colors.primary,
+
+                            justifyContent:
+                              "center",
+
+                            alignItems:
+                              "center",
+                          }}
+                        >
+                          <Icon
+                            name="checkmark"
+                            size={18}
+                            color="#fff"
+                          />
+                        </View>
+                      )}
+                    </View>
+                  </Card>
                 );
               }}
             />
-          </Pressable>
+          </Card>
         </View>
       </Modal>
+                <Button
+            title="Create Event"
+            leftIcon="football-outline"
+            fullWidth
+            onPress={handleCreateEvent}
+            style={{
+              marginTop: Spacing.xl,
+            }}
+          />
+        </Card>
+      </ScrollView>
 
-      {/* Button */}
-      <Pressable style={styles.primaryBtn} onPress={handleCreateEvent}>
-        <Text style={styles.primaryBtnText}>Create Event</Text>
-      </Pressable>
-    </ScrollView>
+      {/* ---------------- Member Selection Modal ---------------- */}
+
+      <Modal
+        visible={showMemberModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowMemberModal(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            padding: Spacing.xl,
+            backgroundColor: "rgba(0,0,0,0.65)",
+          }}
+        >
+          <Card
+            style={{
+              maxHeight: "75%",
+              ...Shadows.lg,
+            }}
+          >
+            {/* Header */}
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: Spacing.lg,
+              }}
+            >
+              <Text variant="h3">
+                Select Members
+              </Text>
+
+              <Button
+                title="Done"
+                variant="ghost"
+                onPress={() =>
+                  setShowMemberModal(false)
+                }
+              />
+            </View>
+
+            <FlatList
+              data={groupMembers}
+              keyExtractor={(item) => item.id}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={() => (
+                <View
+                  style={{
+                    height: Spacing.md,
+                  }}
+                />
+              )}
+              renderItem={({ item }) => {
+                const isSelected =
+                  selectedMembers.includes(item.id);
+
+                return (
+                  <Card
+                    onPress={() =>
+                      toggleMember(item.id)
+                    }
+                    style={{
+                      backgroundColor:
+                        Colors.surface,
+
+                      borderWidth: isSelected
+                        ? 2
+                        : 1,
+
+                      borderColor: isSelected
+                        ? Colors.primary
+                        : Colors.border,
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 46,
+                          height: 46,
+                          borderRadius: 23,
+                          backgroundColor: "#1A2234",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          marginRight: Spacing.md,
+                        }}
+                      >
+                        <Text
+                          variant="subtitle"
+                          weight="700"
+                          color={Colors.primary}
+                        >
+                          {(item.firstName?.[0] || "")
+                            .toUpperCase()}
+                          {(item.lastName?.[0] || "")
+                            .toUpperCase()}
+                        </Text>
+                      </View>
+
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          variant="subtitle"
+                          weight="700"
+                        >
+                          {item.firstName}{" "}
+                          {item.lastName}
+                        </Text>
+
+                        <Text
+                          variant="caption"
+                          color={
+                            Colors.textSecondary
+                          }
+                        >
+                          {item.membershipType ===
+                          "GUEST"
+                            ? "Guest"
+                            : "Member"}
+                        </Text>
+                      </View>
+
+                      {isSelected && (
+                        <View
+                          style={{
+                            width: 34,
+                            height: 34,
+                            borderRadius: 17,
+                            backgroundColor:
+                              Colors.primary,
+                            justifyContent:
+                              "center",
+                            alignItems:
+                              "center",
+                          }}
+                        >
+                          <Icon
+                            name="checkmark"
+                            size={18}
+                            color="#fff"
+                          />
+                        </View>
+                      )}
+                    </View>
+                  </Card>
+                );
+              }}
+            />
+          </Card>
+        </View>
+      </Modal>
+    </ScreenContainer>
   );
 }
