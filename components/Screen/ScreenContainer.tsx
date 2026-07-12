@@ -1,7 +1,7 @@
 import React from "react";
 import {
-    StatusBar,
-    View,
+  StatusBar,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 

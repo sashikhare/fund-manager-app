@@ -1,44 +1,52 @@
-import React, { useEffect, useState } from "react";
-
-import { FlatList, Pressable, Text, TextInput, View } from "react-native";
-
-import { Ionicons } from "@expo/vector-icons";
-
-import * as Clipboard from "expo-clipboard";
+import React, { useEffect, useMemo, useState } from "react";
 
 import {
-    getAllGroupsAPI,
-    getGroupsForUserAPI,
-    joinGroupAPI,
-} from "../api/groupApi";
-
-import { styles } from "../styles/mainStyles";
+  FlatList,
+  Pressable,
+  View
+} from "react-native";
 
 import { useSelector } from "react-redux";
+
+import {
+  getAllGroupsAPI,
+  getGroupsForUserAPI,
+  joinGroupAPI,
+} from "../api/groupApi";
+
+import {
+  Button,
+  Card,
+  Icon,
+  Input,
+  ScreenContainer,
+  Text,
+} from "../components";
+
 import { RootState } from "../redux/store";
+
+import { Colors, Spacing } from "../theme";
+import { showToast } from "../utils/showToast";
 
 export default function AllGroupsScreen() {
   const [groups, setGroups] = useState<any[]>([]);
+
   const [search, setSearch] = useState("");
 
   const user = useSelector((state: RootState) => state.app.currentUser);
 
   const loadGroups = async () => {
-    // 1. Get all groups
     const allGroups = await getAllGroupsAPI();
 
-    // 2. Get joined groups
     const joinedGroups = await getGroupsForUserAPI(user.uid);
 
-    // 3. Extract joined IDs
     const joinedIds = joinedGroups.map((g: any) => g.groupId);
 
-    // 4. Remove joined groups
-    const filteredGroups = allGroups.filter(
+    const filtered = allGroups.filter(
       (group: any) => !joinedIds.includes(group.groupId)
     );
 
-    setGroups(filteredGroups);
+    setGroups(filtered);
   };
 
   useEffect(() => {
@@ -53,136 +61,287 @@ export default function AllGroupsScreen() {
     loadGroups();
   };
 
-  const filteredGroups = groups.filter((group: any) => {
+  const filteredGroups = useMemo(() => {
     const value = search.toLowerCase();
 
-    return (
-      group.name?.toLowerCase().includes(value) ||
-      group.groupId?.toLowerCase().includes(value)
+    return groups.filter(
+      (group: any) =>
+        group.name?.toLowerCase().includes(value) ||
+        group.groupId?.toLowerCase().includes(value)
     );
-  });
+  }, [groups, search]);
 
   return (
-    <>
-      <TextInput
-        placeholder="Search by group name or ID"
-        placeholderTextColor="#999"
+    <ScreenContainer>
+      <Input
         value={search}
         onChangeText={setSearch}
-        style={{
-          backgroundColor: "#1c1c1e",
-          margin: 16,
-          borderRadius: 12,
-          paddingHorizontal: 14,
-          paddingVertical: 12,
-          color: "#fff",
+        label="Search Groups"
+        placeholder="Search by group name or ID"
+        leftIcon="search-outline"
+        containerStyle={{
+          // marginHorizontal: Spacing.lg,
+          marginTop: 0,
+          marginBottom: Spacing.lg,
         }}
       />
+
       <FlatList
         data={filteredGroups}
         keyExtractor={(item) => item.groupId}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          padding: 16,
+          paddingHorizontal: Spacing.lg,
+          paddingBottom: 120,
+          flexGrow: filteredGroups.length === 0 ? 1 : undefined,
         }}
         renderItem={({ item }) => (
-          <View style={styles.memberCard}>
-            <Text style={styles.memberName}>{item.name}</Text>
+          <Card
+            style={{
+              padding: Spacing.lg,
+              marginBottom: Spacing.lg,
+              // alignSelf: "center",
+            }}
+          >
+            {/* Header */}
+            {/* Header */}
 
-            <Text
-              style={{
-                color: "#aaa",
-                marginTop: 6,
-              }}
-            >
-              Group ID: {item.groupId}
-            </Text>
-
-            <Text
-              style={{
-                color: "#aaa",
-                marginTop: 6,
-              }}
-            >
-              Total: {item.stats?.total || 0}
-            </Text>
-
-            <Text style={{ color: "#aaa" }}>
-              Members: {item.stats?.members || 0}
-            </Text>
-
-            <Text style={{ color: "#aaa" }}>
-              Guests: {item.stats?.guests || 0}
-            </Text>
-
-            <Pressable
-              onPress={async () => {
-                await Clipboard.setStringAsync(item.groupId);
-
-                alert("Copied");
-              }}
+            <View
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                marginTop: 10,
+                marginBottom: Spacing.lg,
               }}
             >
-              <Ionicons name="copy-outline" size={18} color="#007AFF" />
+              {/* Avatar */}
 
-              <Text
+              <View
                 style={{
-                  color: "#007AFF",
-                  marginLeft: 6,
+                  width: 56,
+                  height: 56,
+                  borderRadius: 28,
+                  backgroundColor: "#1A2234",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginRight: Spacing.md,
                 }}
               >
-                Copy Group ID
-              </Text>
-            </Pressable>
+                <Text variant="subtitle" weight="700" color={Colors.primary}>
+                  {item.name
+                    ?.split(" ")
+                    .map((x: string) => x[0])
+                    .join("")
+                    .substring(0, 2)
+                    .toUpperCase()}
+                </Text>
+              </View>
+
+              {/* Name + ID */}
+
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                }}
+              >
+                <Text variant="subtitle" weight="700">
+                  {item.name}
+                </Text>
+
+                <Text
+                  variant="caption"
+                  color={Colors.textSecondary}
+                  style={{
+                    marginTop: 2,
+                  }}
+                >
+                  ID • {item.groupId}
+                </Text>
+              </View>
+
+              {/* Copy */}
+
+              <Pressable
+                onPress={async () => {
+                  await Clipboard.setStringAsync(item.groupId);
+                  alert("Group ID copied");
+                }}
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Icon
+                  name="copy-outline"
+                  size={22}
+                  color={Colors.textSecondary}
+                  onPress={async () => {
+                    showToast("Group ID copied");
+                  }}
+                />
+              </Pressable>
+            </View>
+
+            <View
+              style={{
+                height: 1,
+                backgroundColor: Colors.border,
+                marginVertical: Spacing.sm,
+              }}
+            />
+            {/* Stats */}
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginBottom: Spacing.xl,
+              }}
+            >
+              <View
+                style={{
+                  alignItems: "center",
+                  flex: 1,
+                }}
+              >
+                <Icon name="people-outline" size={18} color={Colors.primary} />
+
+                <Text
+                  variant="caption"
+                  color={Colors.textSecondary}
+                  style={{
+                    marginTop: 4,
+                  }}
+                >
+                  Total
+                </Text>
+
+                <Text variant="subtitle" weight="700">
+                  {item.stats?.total || 0}
+                </Text>
+              </View>
+
+              <View
+                style={{
+                  alignItems: "center",
+                  flex: 1,
+                }}
+              >
+                <Icon name="person-outline" size={18} color={Colors.success} />
+
+                <Text
+                  variant="caption"
+                  color={Colors.textSecondary}
+                  style={{
+                    marginTop: 4,
+                  }}
+                >
+                  Members
+                </Text>
+
+                <Text variant="subtitle" weight="700">
+                  {item.stats?.members || 0}
+                </Text>
+              </View>
+
+              <View
+                style={{
+                  alignItems: "center",
+                  flex: 1,
+                }}
+              >
+                <Icon
+                  name="person-add-outline"
+                  size={18}
+                  color={Colors.warning}
+                />
+
+                <Text
+                  variant="caption"
+                  color={Colors.textSecondary}
+                  style={{
+                    marginTop: 4,
+                  }}
+                >
+                  Guests
+                </Text>
+
+                <Text variant="subtitle" weight="700">
+                  {item.stats?.guests || 0}
+                </Text>
+              </View>
+            </View>
+
+            {/* Actions */}
 
             <View
               style={{
                 flexDirection: "row",
               }}
             >
-              {/* MEMBER */}
-              <Pressable
-                style={[
-                  styles.primaryBtn,
-                  {
-                    flex: 1,
-                    marginRight: 8,
-                  },
-                ]}
+              <Button
+                title="Member"
+                leftIcon="person-add-outline"
                 onPress={() => handleJoin(item.groupId, "MEMBER")}
-              >
-                <Text style={styles.primaryBtnText}>Member</Text>
-              </Pressable>
+                style={{
+                  flex: 1,
+                  marginRight: Spacing.sm,
+                }}
+              />
 
-              {/* GUEST */}
-              <Pressable
-                style={[
-                  styles.guestSecondaryBtn,
-                  {
-                    flex: 1,
-                  },
-                ]}
+              <Button
+                title="Guest"
+                variant="outline"
+                leftIcon="walk-outline"
                 onPress={() => handleJoin(item.groupId, "GUEST")}
-              >
-                <Text style={styles.secondaryBtnText}>Guest</Text>
-              </Pressable>
+                style={{
+                  flex: 1,
+                }}
+              />
             </View>
-          </View>
+          </Card>
         )}
-        ListEmptyComponent={() => (
+        ListEmptyComponent={
           <View
             style={{
-              marginTop: 80,
+              flex: 1,
+              justifyContent: "center",
               alignItems: "center",
+              paddingHorizontal: Spacing.xl,
             }}
           >
-            <Text style={{ color: "#999" }}>No groups found</Text>
+            <Icon
+              name="people-circle-outline"
+              size={72}
+              color={Colors.textMuted}
+            />
+
+            <Text
+              variant="h3"
+              align="center"
+              style={{
+                marginTop: Spacing.lg,
+              }}
+            >
+              No Groups Found
+            </Text>
+
+            <Text
+              variant="body"
+              align="center"
+              color={Colors.textSecondary}
+              style={{
+                marginTop: Spacing.sm,
+              }}
+            >
+              We couldn't find any groups matching your search.
+            </Text>
           </View>
-        )}
+        }
       />
-    </>
+    </ScreenContainer>
   );
 }

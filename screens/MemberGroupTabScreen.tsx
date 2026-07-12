@@ -1,27 +1,51 @@
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import React from "react";
 
-import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import { Colors, Typography } from "../theme";
 
 import AllGroupsScreen from "./AllGroupsScreen";
 import JoinedGroupsScreen from "./JoinedGroupsScreen";
 
-const TopTab =
-  createMaterialTopTabNavigator();
+const TopTab = createMaterialTopTabNavigator();
 
 export default function MemberGroupTabScreen() {
   return (
     <TopTab.Navigator
-    //   screenOptions={{
-    //     tabBarStyle: {
-    //       backgroundColor: "#111",
-    //     },
+      sceneStyle={{
+        backgroundColor: Colors.background,
+      }}
+      screenOptions={{
+        tabBarStyle: {
+          backgroundColor: Colors.background,
+          elevation: 0,
+          shadowOpacity: 0,
+          borderBottomWidth: 1,
+          borderBottomColor: Colors.border,
+          paddingTop: 50,
+        },
 
-    //     tabBarActiveTintColor: "#fff",
+        tabBarIndicatorStyle: {
+          backgroundColor: Colors.primary,
+          height: 3,
+          borderRadius: 999,
+        },
 
-    //     tabBarIndicatorStyle: {
-    //       backgroundColor: "#007AFF",
-    //     },
-    //   }}
+        tabBarActiveTintColor: Colors.textPrimary,
+
+        tabBarInactiveTintColor: Colors.textSecondary,
+
+        tabBarLabelStyle: {
+          ...Typography.bodyMedium,
+          fontWeight: "700",
+          textTransform: "none",
+        },
+
+        tabBarPressColor: "transparent",
+
+        tabBarItemStyle: {
+          paddingVertical: 4,
+        },
+      }}
     >
       <TopTab.Screen
         name="My Groups"
