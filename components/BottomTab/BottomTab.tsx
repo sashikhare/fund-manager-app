@@ -91,13 +91,13 @@ export default function BottomTab({
               <Icon
                 name={getIcon(route.name, focused)}
                 size={22}
-                color={focused ? Colors.primary : Colors.textMuted}
+                color={focused ? Colors.white : Colors.textMuted}
               />
             </View>
 
             <Text
               variant="caption"
-              color={focused ? Colors.primary : Colors.textMuted}
+              color={focused ? Colors.white : Colors.textMuted}
               weight={focused ? "700" : "500"}
               align="center"
               style={styles.label}
