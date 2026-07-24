@@ -12,7 +12,6 @@ import { signupAPI } from "../../api/authApi";
 
 import {
   AnimatedBackground,
-  Brand,
   Button,
   Card,
   Input,
@@ -20,11 +19,7 @@ import {
   Text,
 } from "../../components";
 
-import {
-  Colors,
-  Radius,
-  Spacing,
-} from "../../theme";
+import { Colors, Radius, Spacing } from "../../theme";
 
 export default function SignupScreen({ navigation }: any) {
   const [email, setEmail] = useState("");
@@ -75,17 +70,17 @@ export default function SignupScreen({ navigation }: any) {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scroll}
           >
-            <Brand subtitle="Create your account" />
+            {/* <Brand subtitle="Create your account" /> */}
 
             <Card style={styles.card}>
               <View style={styles.nameRow}>
                 <View style={styles.half}>
                   <Input
                     label="First Name"
-                    placeholder="Enter first name"
+                    placeholder="First name"
                     value={firstName}
                     onChangeText={setFirstName}
-                    leftIcon="person-outline"
+                    // leftIcon="person-outline"
                     containerStyle={styles.input}
                     required
                   />
@@ -94,34 +89,35 @@ export default function SignupScreen({ navigation }: any) {
                 <View style={styles.half}>
                   <Input
                     label="Last Name"
-                    placeholder="Enter last name"
+                    placeholder="Last name"
                     value={lastName}
                     onChangeText={setLastName}
-                    leftIcon="person-outline"
+                    // leftIcon="person-outline"
                     containerStyle={styles.input}
+                    required
                   />
                 </View>
               </View>
 
               <Input
                 label="Email Address"
-                placeholder="Enter your email"
+                placeholder="Email"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                leftIcon="mail-outline"
+                // leftIcon="mail-outline"
                 containerStyle={styles.input}
                 required
               />
 
               <Input
                 label="Password"
-                placeholder="Enter your password"
+                placeholder="Password"
                 value={password}
                 onChangeText={setPassword}
                 password
-                leftIcon="lock-closed-outline"
+                // leftIcon="lock-closed-outline"
                 containerStyle={styles.input}
                 required
               />
@@ -129,18 +125,15 @@ export default function SignupScreen({ navigation }: any) {
               <Input
                 label="Group Code"
                 helperText="Optional"
-                placeholder="Enter group code"
+                placeholder="Group code"
                 value={groupId}
                 onChangeText={setGroupId}
                 leftIcon="people-outline"
                 containerStyle={styles.input}
+                optional
               />
 
-              <Text
-                variant="subtitle"
-                weight="600"
-                style={styles.joinTitle}
-              >
+              <Text variant="subtitle" weight="600" style={styles.joinTitle}>
                 Join As
               </Text>
 
@@ -163,10 +156,7 @@ export default function SignupScreen({ navigation }: any) {
                     )}
                   </View>
 
-                  <Text
-                    variant="body"
-                    weight="600"
-                  >
+                  <Text variant="body" weight="600">
                     Member
                   </Text>
                 </Pressable>
@@ -184,15 +174,10 @@ export default function SignupScreen({ navigation }: any) {
                       joinType === "GUEST" && styles.radioOuterActive,
                     ]}
                   >
-                    {joinType === "GUEST" && (
-                      <View style={styles.radioInner} />
-                    )}
+                    {joinType === "GUEST" && <View style={styles.radioInner} />}
                   </View>
 
-                  <Text
-                    variant="body"
-                    weight="600"
-                  >
+                  <Text variant="body" weight="600">
                     Guest
                   </Text>
                 </Pressable>
@@ -208,10 +193,7 @@ export default function SignupScreen({ navigation }: any) {
             </Card>
 
             <View style={styles.footer}>
-              <Text
-                variant="body"
-                align="center"
-              >
+              <Text variant="body" align="center">
                 Already have an account?
               </Text>
 
@@ -219,6 +201,9 @@ export default function SignupScreen({ navigation }: any) {
                 title="Login"
                 variant="ghost"
                 onPress={() => navigation.navigate("Login")}
+                textStyle={{
+                  textDecorationLine: "underline",
+                }}
               />
             </View>
           </ScrollView>

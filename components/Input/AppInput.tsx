@@ -19,6 +19,7 @@ export default function AppInput({
   rightIcon,
   editable = true,
   containerStyle,
+  optional,
   ...props
 }: AppInputProps) {
   const [focused, setFocused] = useState(false);
@@ -32,6 +33,15 @@ export default function AppInput({
           {label}
 
           {required && <AppText color={Colors.danger}>{" *"}</AppText>}
+          {optional && (
+            <AppText
+              variant="label"
+              color={Colors.textMuted}
+              style={{ marginLeft: 6, fontSize: 8 }}
+            >
+              (Optional)
+            </AppText>
+          )}
         </AppText>
       )}
 

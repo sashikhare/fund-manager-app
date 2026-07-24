@@ -1,7 +1,7 @@
 import React from "react";
 import {
-    ActivityIndicator,
-    View,
+  ActivityIndicator,
+  View,
 } from "react-native";
 
 import { Animation, Colors } from "../../theme";
@@ -24,6 +24,7 @@ export default function AppButton({
   leftIcon,
   rightIcon,
   style,
+  textStyle,
 }: AppButtonProps) {
   const isDisabled = disabled || loading;
 
@@ -61,6 +62,7 @@ export default function AppButton({
                   ? "buttonSmall"
                   : "button"
               }
+              style={textStyle}
             >
               {title}
             </AppText>

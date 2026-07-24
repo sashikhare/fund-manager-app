@@ -1,4 +1,4 @@
-import { GestureResponderEvent, StyleProp, ViewStyle } from "react-native";
+import { GestureResponderEvent, StyleProp, TextStyle, ViewStyle } from "react-native";
 import { IconName } from "../Icon";
 
 export type ButtonVariant =
@@ -31,4 +31,5 @@ export interface AppButtonProps {
 
   rightIcon?: IconName;
   style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
 }

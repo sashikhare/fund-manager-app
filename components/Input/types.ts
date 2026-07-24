@@ -1,7 +1,7 @@
 import {
-    StyleProp,
-    TextInputProps,
-    ViewStyle,
+  StyleProp,
+  TextInputProps,
+  ViewStyle,
 } from "react-native";
 
 import { IconName } from "../Icon";
@@ -24,4 +24,5 @@ export interface AppInputProps
   rightIcon?: IconName;
 
   containerStyle?: StyleProp<ViewStyle>;
+  optional?: boolean;
 }

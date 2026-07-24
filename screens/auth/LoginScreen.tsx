@@ -101,6 +101,9 @@ export default function LoginScreen({ navigation }: any) {
               title="Create Account"
               variant="ghost"
               onPress={() => navigation.navigate("Signup")}
+              textStyle={{
+                textDecorationLine: "underline",
+              }}
             />
           </View>
         </View>

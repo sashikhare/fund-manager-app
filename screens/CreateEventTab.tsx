@@ -3,9 +3,11 @@ import React, { useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
+  KeyboardAvoidingView,
   Modal,
   Platform,
   ScrollView,
+  StyleSheet,
   ToastAndroid,
   View,
 } from "react-native";
@@ -20,8 +22,7 @@ import {
   Card,
   Icon,
   Input,
-  ScreenContainer,
-  Text,
+  Text
 } from "../components";
 
 import { RootState } from "../redux/store";
@@ -131,7 +132,12 @@ export default function CreateEventTab() {
   };
 
   return (
-    <ScreenContainer>
+    // <ScreenContainer>
+    <>
+    <KeyboardAvoidingView
+          style={styles.container}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -241,7 +247,7 @@ export default function CreateEventTab() {
             </>
           )}
 
-          <Button
+          {/* <Button
             title={
               selectedMembers.length
                 ? `${selectedMembers.length} Members Selected`
@@ -258,7 +264,7 @@ export default function CreateEventTab() {
               marginTop:
                 Spacing.lg,
             }}
-          />
+          /> */}
                 {/* ---------------- Member Selection Modal ---------------- */}
 
       <Modal
@@ -292,7 +298,7 @@ export default function CreateEventTab() {
               }}
             >
               <Text variant="h3">
-                Select Members
+                Members
               </Text>
 
               <Button
@@ -616,6 +622,29 @@ export default function CreateEventTab() {
           </Card>
         </View>
       </Modal>
-    </ScreenContainer>
+      </KeyboardAvoidingView>
+      </>
+    // </ScreenContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background
+  },
+
+  content: {
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing.xxxl,
+  },
+
+  subtitle: {
+    marginTop: Spacing.xs,
+    marginBottom: Spacing.xl,
+  },
+
+  input: {
+    marginBottom: Spacing.lg,
+  },
+});
