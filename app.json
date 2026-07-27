@@ -12,6 +12,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.sashikhare.turffund",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -29,8 +30,11 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
-    "plugins": [
-      "@react-native-community/datetimepicker"
-    ]
+    "plugins": ["@react-native-community/datetimepicker"],
+    "extra": {
+      "eas": {
+        "projectId": "4b5930c4-5e0d-4200-ab81-13a3798267f5"
+      }
+    }
   }
 }
