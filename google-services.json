@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "565884840549",
+    "project_id": "turf-fund-app",
+    "storage_bucket": "turf-fund-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:565884840549:android:0dcaa9def2c953c731748c",
+        "android_client_info": {
+          "package_name": "com.sashikhare.turffund"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTra0fSnavUjJbWErfHai4aQ5Gz8x4sXw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
