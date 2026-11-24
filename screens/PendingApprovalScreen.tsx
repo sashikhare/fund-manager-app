@@ -26,26 +26,42 @@ export default function PendingApprovalScreen() {
     (state: RootState) => state.app.selectedGroup
   );
 
-  const loadMembers = async () => {
-    if (!selectedGroup?.id) return;
-
-    const data = await getPendingMembersAPI(
-      selectedGroup.id
-    );
-
+  const loadMembers = async (groupId: string) => {
+    const data = await getPendingMembersAPI(groupId);
     setMembers(data);
   };
 
   useEffect(() => {
-    loadMembers();
-  }, [selectedGroup]);
+    let isActive = true;
+
+    // Clear requests from the previously selected group immediately.
+    setMembers([]);
+
+    if (!selectedGroup?.id) return;
+
+    const load = async () => {
+      try {
+        const data = await getPendingMembersAPI(selectedGroup.id);
+        if (isActive) setMembers(data);
+      } catch (error) {
+        console.error("Load Pending Members Error:", error);
+        if (isActive) setMembers([]);
+      }
+    };
+
+    load();
+
+    return () => {
+      isActive = false;
+    };
+  }, [selectedGroup?.id]);
 
   const handleApprove = async (
     relationId: string
   ) => {
     await approveMemberAPI(relationId);
 
-    loadMembers();
+    if (selectedGroup?.id) loadMembers(selectedGroup.id);
   };
 
   if (!selectedGroup?.id) {
