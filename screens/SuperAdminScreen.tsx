@@ -1,6 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import {
+  Alert,
   FlatList,
   Pressable,
   StyleSheet,
@@ -12,6 +13,7 @@ import {
   createAdminAPI,
   deleteAdminAPI,
   getAdminsAPI,
+  resetAdminPasswordAPI,
 } from "../api/adminApi";
 
 import {
@@ -74,6 +76,28 @@ export default function SuperAdminScreen() {
     const data = await getAdminsAPI();
 
     setAdmins(data);
+  };
+
+  const handleResetPassword = (email: string) => {
+    Alert.alert(
+      "Reset administrator password",
+      `Send a password reset email to ${email}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Send Email",
+          onPress: async () => {
+            try {
+              await resetAdminPasswordAPI(email);
+              Alert.alert("Email sent", `A password reset link has been sent to ${email}.`);
+            } catch (error: any) {
+              console.error("Password reset error:", error);
+              Alert.alert("Unable to send email", error?.message || "Please try again.");
+            }
+          },
+        },
+      ]
+    );
   };
 
   useEffect(() => {
@@ -299,6 +323,16 @@ export default function SuperAdminScreen() {
                     </Text>
                   </View>
 
+                  <Pressable
+                    style={styles.resetPasswordButton}
+                    onPress={() => handleResetPassword(item.email)}
+                  >
+                    <Icon name="mail-outline" color={Colors.primary} />
+                    <Text color={Colors.primary} weight="600">
+                      Reset Password
+                    </Text>
+                  </Pressable>
+
                 </Card>
               </Pressable>
             );
@@ -378,5 +412,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: Spacing.sm,
     marginBottom: Spacing.sm,
+  },
+
+  resetPasswordButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: Spacing.sm,
+    marginTop: Spacing.md,
+    paddingVertical: Spacing.sm,
   },
 });
