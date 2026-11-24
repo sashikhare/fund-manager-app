@@ -57,6 +57,10 @@ export default function EventListTab() {
     (state: RootState) => state.app.selectedGroup
   );
 
+  const currentUser = useSelector(
+    (state: RootState) => state.app.currentUser
+  );
+
   const [localAmounts, setLocalAmounts] =
     useState<Record<string, string>>({});
 
@@ -68,7 +72,8 @@ export default function EventListTab() {
   );
 
   useEffect(() => {
-    if (!selectedGroup?.id) return;
+    dispatch(setEvents([]));
+    if (!selectedGroup?.id || !currentUser?.uid || currentUser?.role === "SUPER_ADMIN") return;
 
     const unsubscribe =
       subscribeEventsByGroupAPI(
@@ -79,7 +84,7 @@ export default function EventListTab() {
       );
 
     return unsubscribe;
-  }, [selectedGroup]);
+  }, [selectedGroup?.id, currentUser?.uid, currentUser?.role, dispatch]);
 
   const handleSettle = async () => {
     if (!selectedEvent) return;
