@@ -1,5 +1,6 @@
 import {
     createUserWithEmailAndPassword,
+    sendPasswordResetEmail,
     signInWithEmailAndPassword
 } from "firebase/auth";
 import {
@@ -49,3 +50,8 @@ export const getAdminsAPI = async () => {
 export const deleteAdminAPI = async (uid: string) => {
     await deleteDoc(doc(db, "users", uid));
   };
+
+// SEND ADMIN PASSWORD RESET EMAIL
+export const resetAdminPasswordAPI = async (email: string) => {
+  await sendPasswordResetEmail(auth, email);
+};
