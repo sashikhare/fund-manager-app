@@ -3,20 +3,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StyleSheet
+  StyleSheet,
 } from "react-native";
 import { useSelector } from "react-redux";
 
 import { createGroupAPI } from "../api/groupApi";
-import {
-  Button,
-  Card,
-  Input
-} from "../components";
+import { Button, Card, Input } from "../components";
 import { RootState } from "../redux/store";
-import {
-  Spacing,
-} from "../theme";
+import { Spacing } from "../theme";
 
 export default function CreateGroupScreen() {
   const user = useSelector((state: RootState) => state.app.currentUser);
@@ -28,18 +22,30 @@ export default function CreateGroupScreen() {
   const [noShowFee, setNoShowFee] = useState("");
 
   const handleCreate = async () => {
-    const groupId = await createGroupAPI(
-      {
-        name,
-        openingBalance: Number(openingBalance),
-        memberFee: Number(memberFee),
-        guestFee: Number(guestFee),
-        noShowFee: Number(noShowFee),
-      },
-      user?.email
-    );
+    try {
+      const groupId = await createGroupAPI(
+        {
+          name,
+          openingBalance: Number(openingBalance),
+          memberFee: Number(memberFee),
+          guestFee: Number(guestFee),
+          noShowFee: Number(noShowFee),
+        },
+        user?.email,
+      );
 
-    alert(`Group Created: ${groupId}`);
+      // Clear form after successful creation
+      setName("");
+      setOpeningBalance("");
+      setMemberFee("");
+      setGuestFee("");
+      setNoShowFee("");
+
+      alert(`Group Created: ${groupId}`);
+    } catch (error) {
+      console.error("Create Group Error:", error);
+      alert("Failed to create group. Please try again.");
+    }
   };
 
   return (

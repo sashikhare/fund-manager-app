@@ -12,21 +12,28 @@ import {
   Text,
 } from "../components";
 import { RootState } from "../redux/store";
-import {
-  Colors,
-  Radius,
-  Shadows,
-  Spacing,
-} from "../theme";
+import { Colors, Radius, Shadows, Spacing } from "../theme";
 
 export default function AccountScreen() {
-  const user = useSelector(
-    (state: RootState) => state.app.currentUser
-  );
+  const user = useSelector((state: RootState) => state.app.currentUser) as
+    | {
+        firstName?: string;
+        lastName?: string;
+        role?: string;
+      }
+    | null
+    | undefined;
 
   const selectedGroup = useSelector(
-    (state: RootState) => state.app.selectedGroup
-  );
+    (state: RootState) => state.app.selectedGroup,
+  ) as
+    | {
+        name?: string;
+        role?: string;
+        membershipType?: string;
+      }
+    | null
+    | undefined;
 
   const handleLogout = async () => {
     await logoutAPI();
@@ -36,54 +43,46 @@ export default function AccountScreen() {
     user?.lastName?.charAt(0) || ""
   }`.toUpperCase();
 
+  const displayRole =
+    user?.role === "SUPER_ADMIN"
+      ? "SUPER_ADMIN"
+      : selectedGroup?.role === "ADMIN"
+        ? "ADMIN"
+        : selectedGroup?.membershipType ||
+          selectedGroup?.role ||
+          user?.role ||
+          "";
+
   return (
     <AnimatedBackground>
       <ScreenContainer>
         <View style={styles.container}>
           {/* Avatar */}
           <View style={styles.avatar}>
-            <Text
-              variant="h2"
-              weight="700"
-              color={Colors.primary}
-            >
+            <Text variant="h2" weight="700" color={Colors.primary}>
               {initials}
             </Text>
           </View>
 
           {/* Name */}
-          <Text
-            variant="h2"
-            weight="700"
-            align="center"
-            style={styles.name}
-          >
+          <Text variant="h2" weight="700" align="center" style={styles.name}>
             {user?.firstName} {user?.lastName}
           </Text>
 
           {/* Role */}
           <View style={styles.roleBadge}>
-            <Text
-              variant="bodySmall"
-              weight="600"
-              color={Colors.primary}
-            >
-              {user?.role}
+            <Text variant="bodySmall" weight="600" color={Colors.primary}>
+              {/* {user?.role} */}
+              {displayRole && `${displayRole}`}
             </Text>
           </View>
 
           {/* Group Card */}
           <Card style={styles.groupCard}>
             <View style={styles.row}>
-              <Icon
-                name="people-outline"
-                color={Colors.primary}
-              />
+              <Icon name="people-outline" color={Colors.primary} />
 
-              <Text
-                variant="subtitle"
-                weight="600"
-              >
+              <Text variant="subtitle" weight="600">
                 Current Group
               </Text>
             </View>

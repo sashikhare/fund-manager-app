@@ -1,37 +1,22 @@
 import { subscribeGroupsByAdminAPI } from "@/api/groupApi";
 import React, { useEffect, useState } from "react";
-import {
-  FlatList,
-  StyleSheet,
-  View,
-} from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
-import {
-  Card,
-  Icon,
-  Interactive,
-  Text,
-} from "../components";
+import { Card, Icon, Interactive, Text } from "../components";
 
 import { setSelectedGroup } from "../redux/appSlice";
 import { RootState } from "../redux/store";
 
-import {
-  Colors,
-  Radius,
-  Spacing,
-} from "../theme";
+import { Colors, Radius, Spacing } from "../theme";
 
 export default function GroupListScreen() {
   const dispatch = useDispatch();
 
-  const user = useSelector(
-    (state: RootState) => state.app.currentUser
-  );
+  const user = useSelector((state: RootState) => state.app.currentUser);
 
   const selectedGroup = useSelector(
-    (state: RootState) => state.app.selectedGroup
+    (state: RootState) => state.app.selectedGroup,
   );
 
   const [groups, setGroups] = useState<any[]>([]);
@@ -39,40 +24,24 @@ export default function GroupListScreen() {
   useEffect(() => {
     if (!user?.email) return;
 
-    const unsubscribe = subscribeGroupsByAdminAPI(
-      user.email,
-      (data) => {
-        setGroups(data);
-      }
-    );
+    const unsubscribe = subscribeGroupsByAdminAPI(user.email, (data) => {
+      setGroups(data);
+    });
 
     return () => unsubscribe();
   }, [user]);
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Icon
-        name="people-circle-outline"
-        size={72}
-        color={Colors.textMuted}
-      />
+      <Icon name="people-circle-outline" size={72} color={Colors.textMuted} />
 
-      <Text
-        variant="h3"
-        weight="600"
-        align="center"
-        style={styles.emptyTitle}
-      >
+      <Text variant="h3" weight="600" align="center" style={styles.emptyTitle}>
         No Groups Found
       </Text>
 
-      <Text
-        variant="body"
-        align="center"
-        color={Colors.textSecondary}
-      >
-        Create your first group from the{" "}
-        <Text weight="600">Create Group</Text> tab.
+      <Text variant="body" align="center" color={Colors.textSecondary}>
+        Create your first group from the <Text weight="600">Create Group</Text>{" "}
+        tab.
       </Text>
     </View>
   );
@@ -88,46 +57,33 @@ export default function GroupListScreen() {
       ]}
       ListEmptyComponent={renderEmpty}
       renderItem={({ item }) => {
-        const isSelected =
-          selectedGroup?.id === item.groupId;
+        const isSelected = selectedGroup?.id === item.groupId;
 
         return (
           <Interactive
             onPress={() =>
               dispatch(
                 setSelectedGroup({
+                  ...item,
                   id: item.groupId,
                   name: item.name,
-                })
+                  role: "ADMIN",
+                }),
               )
             }
           >
-            <Card
-              style={[
-                styles.card,
-                isSelected && styles.selectedCard,
-              ]}
-            >
+            <Card style={[styles.card, isSelected && styles.selectedCard]}>
               <View style={styles.header}>
                 <View style={styles.titleRow}>
-                  <Icon
-                    name="football-outline"
-                    color={Colors.primary}
-                  />
+                  <Icon name="football-outline" color={Colors.primary} />
 
-                  <Text
-                    variant="title"
-                    weight="700"
-                  >
+                  <Text variant="title" weight="700">
                     {item.name}
                   </Text>
                 </View>
 
                 {isSelected && (
-                  <Icon
-                    name="checkmark-circle"
-                    color={Colors.success}
-                  />
+                  <Icon name="checkmark-circle" color={Colors.success} />
                 )}
               </View>
 
@@ -138,10 +94,7 @@ export default function GroupListScreen() {
                   color={Colors.textMuted}
                 />
 
-                <Text
-                  variant="bodySmall"
-                  color={Colors.textSecondary}
-                >
+                <Text variant="bodySmall" color={Colors.textSecondary}>
                   Group ID : {item.groupId}
                 </Text>
               </View>
@@ -153,21 +106,14 @@ export default function GroupListScreen() {
                   color={Colors.textMuted}
                 />
 
-                <Text
-                  variant="bodySmall"
-                  color={Colors.textSecondary}
-                >
+                <Text variant="bodySmall" color={Colors.textSecondary}>
                   Member Fee : ₹{item.memberFee}
                 </Text>
               </View>
 
               {isSelected && (
                 <View style={styles.badge}>
-                  <Text
-                    variant="caption"
-                    weight="600"
-                    color={Colors.primary}
-                  >
+                  <Text variant="caption" weight="600" color={Colors.primary}>
                     Current Group
                   </Text>
                 </View>

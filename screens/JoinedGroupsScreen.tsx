@@ -22,7 +22,7 @@ export default function JoinedGroupsScreen() {
   const user = useSelector((state: RootState) => state.app.currentUser);
 
   const selectedGroup = useSelector(
-    (state: RootState) => state.app.selectedGroup
+    (state: RootState) => state.app.selectedGroup,
   );
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export default function JoinedGroupsScreen() {
             ...group,
             stats,
           };
-        })
+        }),
       );
 
       setGroups(groupsWithStats);
@@ -65,9 +65,13 @@ export default function JoinedGroupsScreen() {
               onPress={() =>
                 dispatch(
                   setSelectedGroup({
+                    ...item,
                     id: item.groupId,
                     name: item.name,
-                  })
+                    role: item.role,
+                    membershipType: item.membershipType,
+                    status: item.status,
+                  }),
                 )
               }
               style={{
@@ -277,8 +281,8 @@ export default function JoinedGroupsScreen() {
                       item.membershipType === "GUEST"
                         ? "#3B3B3B"
                         : item.status === "APPROVED"
-                        ? "#143D26"
-                        : "#4A3205",
+                          ? "#143D26"
+                          : "#4A3205",
                   }}
                 >
                   <Text
@@ -288,15 +292,15 @@ export default function JoinedGroupsScreen() {
                       item.membershipType === "GUEST"
                         ? "#FFFFFF"
                         : item.status === "APPROVED"
-                        ? "#32D583"
-                        : "#FDB022"
+                          ? "#32D583"
+                          : "#FDB022"
                     }
                   >
                     {item.membershipType === "GUEST"
                       ? "GUEST"
                       : item.status === "APPROVED"
-                      ? "MEMBER"
-                      : "AWAITING APPROVAL"}
+                        ? "MEMBER"
+                        : "AWAITING APPROVAL"}
                   </Text>
                 </View>
               </View>
