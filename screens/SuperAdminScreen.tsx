@@ -4,9 +4,10 @@ import { Alert, FlatList, Pressable, StyleSheet, View } from "react-native";
 import { useSelector } from "react-redux";
 
 import {
+  createAdminAPI,
   deleteAdminAPI,
   getAdminsAPI,
-  resetAdminPasswordAPI
+  resetAdminPasswordAPI,
 } from "../api/adminApi";
 
 import {
@@ -34,6 +35,7 @@ export default function SuperAdminScreen() {
   const [mobile, setMobile] = useState("");
   const [toastMessage, setToastMessage] = useState("");
   const [toastVisible, setToastVisible] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -119,8 +121,22 @@ export default function SuperAdminScreen() {
   }, [selectedIds]);
 
   const handleCreate = async () => {
+    if (isCreating) return;
+
+    setIsCreating(true);
+
     try {
-      // Keep your existing createAdminAPI(...) call here.
+      await createAdminAPI(
+        email.trim(),
+        password,
+        {
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          mobile: mobile.trim(),
+        },
+        SUPER_ADMIN_EMAIL,
+        SUPER_ADMIN_PASSWORD,
+      );
 
       setShowForm(false);
       setEmail("");
@@ -135,10 +151,13 @@ export default function SuperAdminScreen() {
       setToastVisible(true);
     } catch (error: any) {
       console.error("Create administrator error:", error);
+
       Alert.alert(
         "Unable to create administrator",
         error?.message || "Please try again.",
       );
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -223,6 +242,8 @@ export default function SuperAdminScreen() {
                     title="Save Administrator"
                     leftIcon="save-outline"
                     onPress={handleCreate}
+                    loading={isCreating}
+                    disabled={isCreating}
                   />
                 </Card>
               )}
