@@ -50,16 +50,38 @@ export default function MembersListScreen({ navigation }: Props) {
   const hasMembers = members.length > 0;
 
   useEffect(() => {
+    let isActive = true;
+
+    // Never keep members from a previously selected group.
+    dispatch(setMembers([]));
+    setSelectedIds([]);
+    setShowModal(false);
+    setFirstName("");
+    setLastName("");
+
     if (!selectedGroup?.id) return;
 
     const load = async () => {
-      const data = await getMembersByGroupAPI(selectedGroup.id);
+      try {
+        const data = await getMembersByGroupAPI(selectedGroup.id);
 
-      dispatch(setMembers(data));
+        if (isActive) {
+          dispatch(setMembers(data));
+        }
+      } catch (error) {
+        console.error("Load Members Error:", error);
+        if (isActive) {
+          dispatch(setMembers([]));
+        }
+      }
     };
 
     load();
-  }, [selectedGroup]);
+
+    return () => {
+      isActive = false;
+    };
+  }, [selectedGroup?.id, dispatch]);
 
   useEffect(() => {
     setSelectedIds((prev) =>
@@ -68,7 +90,7 @@ export default function MembersListScreen({ navigation }: Props) {
   }, [members]);
 
   const handleAdd = async () => {
-    if (!firstName || !lastName) return;
+    if (!selectedGroup?.id || !firstName || !lastName) return;
 
     const tempId = Date.now().toString();
 
@@ -124,6 +146,38 @@ export default function MembersListScreen({ navigation }: Props) {
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
   };
+
+  if (!selectedGroup?.id) {
+    return (
+      <ScreenContainer>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingHorizontal: Spacing.xl,
+          }}
+        >
+          <Icon name="people-outline" size={64} color={Colors.textMuted} />
+          <Text
+            variant="h3"
+            align="center"
+            style={{ marginTop: Spacing.lg }}
+          >
+            No Group Selected
+          </Text>
+          <Text
+            variant="body"
+            color={Colors.textSecondary}
+            align="center"
+            style={{ marginTop: Spacing.sm }}
+          >
+            Please select a group to view its members.
+          </Text>
+        </View>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer>
