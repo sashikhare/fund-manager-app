@@ -1,5 +1,5 @@
 import React from "react";
-import { StatusBar, View } from "react-native";
+import { StatusBar, Text, View } from "react-native";
 import { render } from "@testing-library/react-native";
 
 import ScreenContainer from "../../components/Screen/ScreenContainer";
@@ -22,13 +22,11 @@ describe("ScreenContainer", () => {
   it("renders its children", () => {
     const { getByText } = render(
       <ScreenContainer>
-        <View>
-          <View testID="screen-content" />
-        </View>
+        <Text>Screen content</Text>
       </ScreenContainer>,
     );
 
-    expect(getByText).toBeDefined();
+    expect(getByText("Screen content")).toBeTruthy();
   });
 
   it("renders the safe area wrapper and content container", () => {
