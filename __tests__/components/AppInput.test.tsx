@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, TextInput } from "react-native";
+import { Text } from "react-native";
 import { fireEvent, render } from "@testing-library/react-native";
 
 import AppInput from "../../components/Input/AppInput";
@@ -23,11 +23,14 @@ describe("AppInput", () => {
   });
 
   it("renders the label and required indicator", () => {
-    const { getByText } = render(
+    const { getAllByType, getByText } = render(
       <AppInput label="Email" required placeholder="Email address" />,
     );
+    const label = getAllByType(Text).find(
+      (node) => Array.isArray(node.props.children) && node.props.children[0] === "Email",
+    );
 
-    expect(getByText("Email")).toBeTruthy();
+    expect(label).toBeTruthy();
     expect(getByText(" *")).toBeTruthy();
   });
 
