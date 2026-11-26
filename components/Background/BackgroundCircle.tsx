@@ -10,7 +10,7 @@ import Animated, {
 interface Props {
   size: number;
   color: string;
-  top?: number;
+  top?: number | `${number}%`;
   left?: number;
   right?: number;
   bottom?: number;
