@@ -11,9 +11,6 @@ const TopTab = createMaterialTopTabNavigator();
 export default function MembersTabScreen() {
   return (
     <TopTab.Navigator
-      sceneStyle={{
-        backgroundColor: Colors.background,
-      }}
       screenOptions={{
         tabBarStyle: {
           backgroundColor: Colors.background,
@@ -30,7 +27,7 @@ export default function MembersTabScreen() {
           borderRadius: 999,
         },
 
-        tabBarActiveTintColor: Colors.textPrimary,
+        tabBarActiveTintColor: Colors.text,
 
         tabBarInactiveTintColor: Colors.textSecondary,
 
@@ -48,7 +45,8 @@ export default function MembersTabScreen() {
       }}
     >
       <TopTab.Screen
-        name="Members List"
+        name="Members"
+        options={{ tabBarLabel: "Members List" }}
         component={MembersListScreen}
       />
 
