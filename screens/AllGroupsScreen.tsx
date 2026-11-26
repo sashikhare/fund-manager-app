@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 
 import { useSelector } from "react-redux";
+import * as Clipboard from "expo-clipboard";
 
 import {
   getAllGroupsAPI,
@@ -22,7 +23,6 @@ import {
 import { RootState } from "../redux/store";
 
 import { Colors, Spacing } from "../theme";
-import { showToast } from "../utils/showToast";
 
 export default function AllGroupsScreen() {
   const [groups, setGroups] = useState<any[]>([]);
@@ -32,6 +32,8 @@ export default function AllGroupsScreen() {
   const user = useSelector((state: RootState) => state.app.currentUser);
 
   const loadGroups = async () => {
+    if (!user) return;
+
     const allGroups = await getAllGroupsAPI();
 
     const joinedGroups = await getGroupsForUserAPI(user.uid);
@@ -50,6 +52,8 @@ export default function AllGroupsScreen() {
   }, []);
 
   const handleJoin = async (groupId: string, type: "MEMBER" | "GUEST") => {
+    if (!user) return;
+
     await joinGroupAPI(groupId, user.uid, type);
 
     alert(type === "MEMBER" ? "Request sent for approval" : "Joined as guest");
@@ -174,9 +178,6 @@ export default function AllGroupsScreen() {
                   name="copy-outline"
                   size={22}
                   color={Colors.textSecondary}
-                  onPress={async () => {
-                    showToast("Group ID copied");
-                  }}
                 />
               </Pressable>
             </View>
@@ -290,7 +291,7 @@ export default function AllGroupsScreen() {
 
               <Button
                 title="Guest"
-                variant="outline"
+                variant="secondary"
                 leftIcon="walk-outline"
                 onPress={() => handleJoin(item.groupId, "GUEST")}
                 style={{
