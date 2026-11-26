@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable } from "react-native";
+import { ActivityIndicator, Pressable } from "react-native";
 import { fireEvent, render } from "@testing-library/react-native";
 
 import AppButton from "../../components/Button/AppButton";
@@ -56,12 +56,12 @@ describe("AppButton", () => {
   });
 
   it("shows a loading indicator instead of the title while loading", () => {
-    const { queryByText, getByRole } = render(
+    const { queryByText, UNSAFE_getByType } = render(
       <AppButton title="Saving" loading />,
     );
 
     expect(queryByText("Saving")).toBeNull();
-    expect(getByRole("progressbar")).toBeTruthy();
+    expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy();
   });
 
   it("disables the button while loading", () => {
