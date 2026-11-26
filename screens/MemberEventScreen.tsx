@@ -46,8 +46,13 @@ export default function MemberEventScreen() {
   }, [selectedGroup]);
 
   const handleJoin = async (eventId: string) => {
+    if (!currentUser?.uid || !selectedGroup?.id) {
+      alert("Please sign in and select a group before joining an event.");
+      return;
+    }
+
     try {
-      await joinEventAPI(eventId, currentUser?.uid, selectedGroup?.id);
+      await joinEventAPI(eventId, currentUser.uid, selectedGroup.id);
 
       alert("Joined Successfully");
     } catch (e: any) {
