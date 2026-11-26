@@ -1,10 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-import {
-  FlatList,
-  Pressable,
-  View
-} from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
 
 import { useSelector } from "react-redux";
 
@@ -43,7 +39,7 @@ export default function AllGroupsScreen() {
     const joinedIds = joinedGroups.map((g: any) => g.groupId);
 
     const filtered = allGroups.filter(
-      (group: any) => !joinedIds.includes(group.groupId)
+      (group: any) => !joinedIds.includes(group.groupId),
     );
 
     setGroups(filtered);
@@ -67,7 +63,7 @@ export default function AllGroupsScreen() {
     return groups.filter(
       (group: any) =>
         group.name?.toLowerCase().includes(value) ||
-        group.groupId?.toLowerCase().includes(value)
+        group.groupId?.toLowerCase().includes(value),
     );
   }, [groups, search]);
 
@@ -313,35 +309,46 @@ export default function AllGroupsScreen() {
               paddingHorizontal: Spacing.xl,
             }}
           >
-            <Icon
-              name="people-circle-outline"
-              size={72}
-              color={Colors.textMuted}
-            />
+            <Card style={styles.emptyCard}>
+              <Icon
+                name="people-circle-outline"
+                size={72}
+                color={Colors.textMuted}
+              />
 
-            <Text
-              variant="h3"
-              align="center"
-              style={{
-                marginTop: Spacing.lg,
-              }}
-            >
-              No Groups Found
-            </Text>
+              <Text
+                variant="h3"
+                align="center"
+                style={{
+                  marginTop: Spacing.lg,
+                }}
+              >
+                No Groups Found
+              </Text>
 
-            <Text
-              variant="body"
-              align="center"
-              color={Colors.textSecondary}
-              style={{
-                marginTop: Spacing.sm,
-              }}
-            >
-              We couldn't find any groups matching your search.
-            </Text>
+              <Text
+                variant="body"
+                align="center"
+                color={Colors.textSecondary}
+                style={{
+                  marginTop: Spacing.sm,
+                }}
+              >
+                We couldn't find any groups matching your search.
+              </Text>
+            </Card>
           </View>
         }
       />
     </ScreenContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  emptyCard: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Spacing.xxxl,
+    marginTop: Spacing.xxl,
+  },
+});

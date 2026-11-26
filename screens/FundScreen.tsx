@@ -5,7 +5,7 @@ import {
   Modal,
   Platform,
   StyleSheet,
-  View
+  View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -29,11 +29,11 @@ export default function FundScreen() {
   const fund = useSelector((state: RootState) => state.app.fund);
 
   const transactions = useSelector(
-    (state: RootState) => state.app.transactions
+    (state: RootState) => state.app.transactions,
   );
 
   const selectedGroup = useSelector(
-    (state: RootState) => state.app.selectedGroup
+    (state: RootState) => state.app.selectedGroup,
   );
 
   const currentUser = useSelector((state: RootState) => state.app.currentUser);
@@ -78,7 +78,7 @@ export default function FundScreen() {
       setError("Not enough balance");
       return;
     }
-    
+
     const updatedFund = fund - value;
 
     const newTransaction = {
@@ -106,11 +106,7 @@ export default function FundScreen() {
         <ScreenContainer>
           <View style={[styles.container, styles.noGroupContainer]}>
             <Card style={styles.emptyCard}>
-              <Icon
-                name="people-outline"
-                size={56}
-                color={Colors.textMuted}
-              />
+              <Icon name="people-outline" size={56} color={Colors.textMuted} />
               <Text
                 variant="subtitle"
                 weight="600"
@@ -236,8 +232,8 @@ export default function FundScreen() {
                 item.type === "SPEND"
                   ? "card-outline"
                   : item.type === "EVENT"
-                  ? "football-outline"
-                  : "wallet-outline";
+                    ? "football-outline"
+                    : "wallet-outline";
 
               return (
                 <Card style={styles.transactionCard}>

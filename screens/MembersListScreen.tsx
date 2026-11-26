@@ -1,6 +1,12 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React, { useEffect, useLayoutEffect, useState } from "react";
-import { FlatList, Modal, TouchableOpacity, View } from "react-native";
+import {
+  FlatList,
+  Modal,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
 import { RootStackParamList } from "../../App";
@@ -34,7 +40,7 @@ export default function MembersListScreen({ navigation }: Props) {
   const members = useSelector((state: RootState) => state.app.members);
 
   const selectedGroup = useSelector(
-    (state: RootState) => state.app.selectedGroup
+    (state: RootState) => state.app.selectedGroup,
   );
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -85,7 +91,7 @@ export default function MembersListScreen({ navigation }: Props) {
 
   useEffect(() => {
     setSelectedIds((prev) =>
-      prev.filter((id) => members.some((m) => m.id === id))
+      prev.filter((id) => members.some((m) => m.id === id)),
     );
   }, [members]);
 
@@ -143,7 +149,7 @@ export default function MembersListScreen({ navigation }: Props) {
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
   };
 
@@ -158,22 +164,20 @@ export default function MembersListScreen({ navigation }: Props) {
             paddingHorizontal: Spacing.xl,
           }}
         >
-          <Icon name="people-outline" size={64} color={Colors.textMuted} />
-          <Text
-            variant="h3"
-            align="center"
-            style={{ marginTop: Spacing.lg }}
-          >
-            No Group Selected
-          </Text>
-          <Text
-            variant="body"
-            color={Colors.textSecondary}
-            align="center"
-            style={{ marginTop: Spacing.sm }}
-          >
-            Please select a group to view its members.
-          </Text>
+          <Card style={styles.emptyCard}>
+            <Icon name="people-outline" size={64} color={Colors.textMuted} />
+            <Text variant="h3" align="center" style={{ marginTop: Spacing.lg }}>
+              No Group Selected
+            </Text>
+            <Text
+              variant="body"
+              color={Colors.textSecondary}
+              align="center"
+              style={{ marginTop: Spacing.sm }}
+            >
+              Please select a group to view its members.
+            </Text>
+          </Card>
         </View>
       </ScreenContainer>
     );
@@ -250,15 +254,15 @@ export default function MembersListScreen({ navigation }: Props) {
               item.membershipType === "GUEST"
                 ? "Guest"
                 : item.status === "APPROVED"
-                ? "Member"
-                : "Awaiting Approval";
+                  ? "Member"
+                  : "Awaiting Approval";
 
             const statusColor =
               item.membershipType === "GUEST"
                 ? Colors.textSecondary
                 : item.status === "APPROVED"
-                ? Colors.success
-                : Colors.warning;
+                  ? Colors.success
+                  : Colors.warning;
 
             return (
               <Card
@@ -465,3 +469,12 @@ export default function MembersListScreen({ navigation }: Props) {
     </ScreenContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  emptyCard: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Spacing.xxxl,
+    marginTop: Spacing.xxl,
+  },
+});

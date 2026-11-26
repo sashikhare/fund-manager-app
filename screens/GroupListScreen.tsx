@@ -33,16 +33,23 @@ export default function GroupListScreen() {
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Icon name="people-circle-outline" size={72} color={Colors.textMuted} />
+      <Card style={styles.emptyCard}>
+        <Icon name="people-circle-outline" size={72} color={Colors.textMuted} />
 
-      <Text variant="h3" weight="600" align="center" style={styles.emptyTitle}>
-        No Groups Found
-      </Text>
+        <Text
+          variant="h3"
+          weight="600"
+          align="center"
+          style={styles.emptyTitle}
+        >
+          No Groups Found
+        </Text>
 
-      <Text variant="body" align="center" color={Colors.textSecondary}>
-        Create your first group from the <Text weight="600">Create Group</Text>{" "}
-        tab.
-      </Text>
+        <Text variant="body" align="center" color={Colors.textSecondary}>
+          Create your first group from the{" "}
+          <Text weight="600">Create Group</Text> tab.
+        </Text>
+      </Card>
     </View>
   );
 
@@ -186,5 +193,12 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xs,
     borderRadius: Radius.full,
     backgroundColor: Colors.primaryLight,
+  },
+
+  emptyCard: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Spacing.xxxl,
+    marginTop: Spacing.xxl,
   },
 });

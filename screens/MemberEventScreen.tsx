@@ -1,125 +1,74 @@
-import React, {
-  useEffect,
-  useState,
-} from "react";
+import React, { useEffect, useState } from "react";
 
-import {
-  FlatList,
-  View,
-} from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
 
 import { useSelector } from "react-redux";
 
-import {
-  collection,
-  onSnapshot,
-  query,
-  where,
-} from "firebase/firestore";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 
 import { joinEventAPI } from "@/api/eventAPI";
 
 import { db } from "../firebase/firebase";
 
-import {
-  Button,
-  Card,
-  Icon,
-  ScreenContainer,
-  Text,
-} from "../components";
+import { Button, Card, Icon, ScreenContainer, Text } from "../components";
 
 import { RootState } from "../redux/store";
 
-import {
-  Colors,
-  Spacing,
-} from "../theme";
+import { Colors, Spacing } from "../theme";
 
 export default function MemberEventScreen() {
-  const [events, setEvents] =
-    useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
 
-  const currentUser =
-    useSelector(
-      (state: RootState) =>
-        state.app.currentUser
-    );
+  const currentUser = useSelector((state: RootState) => state.app.currentUser);
 
-  const selectedGroup =
-    useSelector(
-      (state: RootState) =>
-        state.app.selectedGroup
-    );
+  const selectedGroup = useSelector(
+    (state: RootState) => state.app.selectedGroup,
+  );
 
   useEffect(() => {
     if (!selectedGroup?.id) return;
 
     const q = query(
       collection(db, "events"),
-      where(
-        "groupId",
-        "==",
-        selectedGroup.id
-      )
+      where("groupId", "==", selectedGroup.id),
     );
 
-    const unsubscribe =
-      onSnapshot(q, (snapshot) => {
-        const data =
-          snapshot.docs.map(
-            (doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            })
-          );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
-        setEvents(data);
-      });
+      setEvents(data);
+    });
 
     return unsubscribe;
   }, [selectedGroup]);
 
-  const handleJoin =
-    async (eventId: string) => {
-      try {
-        await joinEventAPI(
-          eventId,
-          currentUser?.uid,
-          selectedGroup?.id
-        );
+  const handleJoin = async (eventId: string) => {
+    try {
+      await joinEventAPI(eventId, currentUser?.uid, selectedGroup?.id);
 
-        alert(
-          "Joined Successfully"
-        );
-      } catch (e: any) {
-        alert(e.message);
-      }
-    };
+      alert("Joined Successfully");
+    } catch (e: any) {
+      alert(e.message);
+    }
+  };
 
   return (
     <ScreenContainer>
       <FlatList
         data={events}
-        keyExtractor={(item) =>
-          item.id
-        }
-        showsVerticalScrollIndicator={
-          false
-        }
+        keyExtractor={(item) => item.id}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingHorizontal:
-            Spacing.lg,
+          paddingHorizontal: Spacing.lg,
           paddingBottom: 120,
-          flexGrow:
-            events.length === 0
-              ? 1
-              : undefined,
+          flexGrow: events.length === 0 ? 1 : undefined,
         }}
-                renderItem={({ item }) => {
+        renderItem={({ item }) => {
           const joinedMember = item.members?.find(
-            (m: any) =>
-              m.memberId === currentUser?.uid
+            (m: any) => m.memberId === currentUser?.uid,
           );
 
           return (
@@ -163,10 +112,7 @@ export default function MemberEventScreen() {
                     flex: 1,
                   }}
                 >
-                  <Text
-                    variant="subtitle"
-                    weight="700"
-                  >
+                  <Text variant="subtitle" weight="700">
                     {item.name}
                   </Text>
 
@@ -185,16 +131,12 @@ export default function MemberEventScreen() {
 
                     <Text
                       variant="caption"
-                      color={
-                        Colors.textSecondary
-                      }
+                      color={Colors.textSecondary}
                       style={{
                         marginLeft: 4,
                       }}
                     >
-                      {new Date(
-                        item.date
-                      ).toDateString()}
+                      {new Date(item.date).toDateString()}
                     </Text>
                   </View>
                 </View>
@@ -205,10 +147,8 @@ export default function MemberEventScreen() {
               <View
                 style={{
                   height: 1,
-                  backgroundColor:
-                    Colors.border,
-                  marginVertical:
-                    Spacing.lg,
+                  backgroundColor: Colors.border,
+                  marginVertical: Spacing.lg,
                 }}
               />
 
@@ -217,8 +157,7 @@ export default function MemberEventScreen() {
               <View
                 style={{
                   flexDirection: "row",
-                  justifyContent:
-                    "space-between",
+                  justifyContent: "space-between",
                 }}
               >
                 {/* Turf */}
@@ -229,13 +168,7 @@ export default function MemberEventScreen() {
                     alignItems: "center",
                   }}
                 >
-                  <Icon
-                    name="cash-outline"
-                    size={18}
-                    color={
-                      Colors.primary
-                    }
-                  />
+                  <Icon name="cash-outline" size={18} color={Colors.primary} />
 
                   <Text
                     variant="h3"
@@ -244,18 +177,10 @@ export default function MemberEventScreen() {
                       marginTop: 6,
                     }}
                   >
-                    ₹
-                    {
-                      item.turfBookingAmount
-                    }
+                    ₹{item.turfBookingAmount}
                   </Text>
 
-                  <Text
-                    variant="caption"
-                    color={
-                      Colors.textSecondary
-                    }
-                  >
+                  <Text variant="caption" color={Colors.textSecondary}>
                     Turf Cost
                   </Text>
                 </View>
@@ -271,9 +196,7 @@ export default function MemberEventScreen() {
                   <Icon
                     name="people-outline"
                     size={18}
-                    color={
-                      Colors.success
-                    }
+                    color={Colors.success}
                   />
 
                   <Text
@@ -283,18 +206,10 @@ export default function MemberEventScreen() {
                       marginTop: 6,
                     }}
                   >
-                    {
-                      item.members
-                        ?.length || 0
-                    }
+                    {item.members?.length || 0}
                   </Text>
 
-                  <Text
-                    variant="caption"
-                    color={
-                      Colors.textSecondary
-                    }
-                  >
+                  <Text variant="caption" color={Colors.textSecondary}>
                     Joined
                   </Text>
                 </View>
@@ -305,10 +220,8 @@ export default function MemberEventScreen() {
               <View
                 style={{
                   height: 1,
-                  backgroundColor:
-                    Colors.border,
-                  marginVertical:
-                    Spacing.lg,
+                  backgroundColor: Colors.border,
+                  marginVertical: Spacing.lg,
                 }}
               />
 
@@ -317,28 +230,20 @@ export default function MemberEventScreen() {
               {joinedMember ? (
                 <View
                   style={{
-                    alignItems:
-                      "center",
+                    alignItems: "center",
                   }}
                 >
                   <View
                     style={{
-                      flexDirection:
-                        "row",
-                      alignItems:
-                        "center",
-                      backgroundColor:
-                        "#143D26",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor: "#143D26",
                       paddingHorizontal: 18,
                       paddingVertical: 10,
                       borderRadius: 999,
                     }}
                   >
-                    <Icon
-                      name="checkmark-circle"
-                      size={18}
-                      color="#32D583"
-                    />
+                    <Icon name="checkmark-circle" size={18} color="#32D583" />
 
                     <Text
                       variant="bodySmall"
@@ -348,10 +253,7 @@ export default function MemberEventScreen() {
                         marginLeft: 8,
                       }}
                     >
-                      Joined as{" "}
-                      {
-                        joinedMember.membershipType
-                      }
+                      Joined as {joinedMember.membershipType}
                     </Text>
                   </View>
                 </View>
@@ -360,15 +262,13 @@ export default function MemberEventScreen() {
                   title="Join Event"
                   leftIcon="log-in-outline"
                   fullWidth
-                  onPress={() =>
-                    handleJoin(item.id)
-                  }
+                  onPress={() => handleJoin(item.id)}
                 />
               )}
             </Card>
           );
         }}
-                ListEmptyComponent={
+        ListEmptyComponent={
           <View
             style={{
               flex: 1,
@@ -377,48 +277,57 @@ export default function MemberEventScreen() {
               paddingHorizontal: Spacing.xl,
             }}
           >
-            <Icon
-              name="football-outline"
-              size={72}
-              color={Colors.textMuted}
-            />
+            <Card style={styles.emptyCard}>
+              <Icon
+                name="football-outline"
+                size={72}
+                color={Colors.textMuted}
+              />
 
-            <Text
-              variant="h3"
-              align="center"
-              style={{
-                marginTop: Spacing.lg,
-              }}
-            >
-              No Events Available
-            </Text>
+              <Text
+                variant="h3"
+                align="center"
+                style={{
+                  marginTop: Spacing.lg,
+                }}
+              >
+                No Events Available
+              </Text>
 
-            <Text
-              variant="body"
-              align="center"
-              color={Colors.textSecondary}
-              style={{
-                marginTop: Spacing.sm,
-              }}
-            >
-              There are no upcoming events
-              for this group yet.
-            </Text>
+              <Text
+                variant="body"
+                align="center"
+                color={Colors.textSecondary}
+                style={{
+                  marginTop: Spacing.sm,
+                }}
+              >
+                There are no upcoming events for this group yet.
+              </Text>
 
-            <Text
-              variant="caption"
-              align="center"
-              color={Colors.textMuted}
-              style={{
-                marginTop: Spacing.xs,
-              }}
-            >
-              Ask your group admin to create
-              a new event.
-            </Text>
+              <Text
+                variant="caption"
+                align="center"
+                color={Colors.textMuted}
+                style={{
+                  marginTop: Spacing.xs,
+                }}
+              >
+                Ask your group admin to create a new event.
+              </Text>
+            </Card>
           </View>
         }
       />
     </ScreenContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  emptyCard: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Spacing.xxxl,
+    marginTop: Spacing.xxl,
+  },
+});
