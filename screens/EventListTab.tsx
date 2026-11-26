@@ -68,7 +68,7 @@ export default function EventListTab() {
   }, [selectedGroup?.id, currentUser?.uid, currentUser?.role, dispatch]);
 
   const handleSettle = async () => {
-    if (!selectedEvent) return;
+    if (!selectedEvent || !selectedGroup?.id) return;
 
     const totalCollected = selectedEvent.members.reduce(
       (sum, m) => sum + (m.paid > 0 ? m.paid : m.fee || 0),
@@ -95,7 +95,7 @@ export default function EventListTab() {
       date: new Date().toISOString(),
     };
 
-    await updateFundAPI(selectedGroup?.id, {
+    await updateFundAPI(selectedGroup.id, {
       fund: updatedFund,
       transactions: [newTransaction, ...transactions],
     });
