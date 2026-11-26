@@ -1,5 +1,4 @@
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FlatList,
   Modal,
@@ -32,9 +31,8 @@ import { RootState } from "../redux/store";
 
 import { Colors, Layout, Radius, Shadows, Spacing } from "../theme";
 
-type Props = NativeStackScreenProps<RootStackParamList, "Members">;
 
-export default function MembersListScreen({ navigation }: Props) {
+export default function MembersListScreen() {
   const dispatch = useDispatch();
 
   const members = useSelector((state: RootState) => state.app.members);
@@ -133,19 +131,6 @@ export default function MembersListScreen({ navigation }: Props) {
 
     setSelectedIds([]);
   };
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: isSelectionMode ? `${selectedIds.length} selected` : "Members",
-
-      headerRight: () =>
-        isSelectionMode && hasMembers ? (
-          <TouchableOpacity onPress={handleDelete}>
-            <Icon name="trash-outline" color={Colors.danger} size={22} />
-          </TouchableOpacity>
-        ) : null,
-    });
-  }, [selectedIds]);
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) =>
