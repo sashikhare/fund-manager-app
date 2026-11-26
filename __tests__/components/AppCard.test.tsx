@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, View } from "react-native";
+import { Text, View } from "react-native";
 import { fireEvent, render } from "@testing-library/react-native";
 
 import AppCard from "../../components/Card/AppCard";
@@ -21,9 +21,7 @@ describe("AppCard", () => {
   it("renders its children", () => {
     const { getByText } = render(
       <AppCard>
-        <View>
-          <>{ "Card content" }</>
-        </View>
+        <Text>Card content</Text>
       </AppCard>,
     );
 
@@ -65,12 +63,12 @@ describe("AppCard", () => {
 
   it("accepts the outlined and elevated variants", () => {
     const { getByText, rerender } = render(
-      <AppCard variant="outlined">Outlined card</AppCard>,
+      <AppCard variant="outlined"><Text>Outlined card</Text></AppCard>,
     );
 
     expect(getByText("Outlined card")).toBeTruthy();
 
-    rerender(<AppCard variant="elevated">Elevated card</AppCard>);
+    rerender(<AppCard variant="elevated"><Text>Elevated card</Text></AppCard>);
 
     expect(getByText("Elevated card")).toBeTruthy();
   });
