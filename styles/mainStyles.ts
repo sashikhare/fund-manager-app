@@ -216,8 +216,9 @@ export const styles = StyleSheet.create({
     },
     
     eventDate: {
-      color: "#999",
+      color: "#666",
       marginTop: 4,
+      fontSize: 13,
     },
     
     title: {
@@ -452,11 +453,6 @@ export const styles = StyleSheet.create({
       alignItems: "center",
       marginTop: 6,
       marginBottom: 16
-    },
-    
-    eventDate: {
-      color: "#666",
-      fontSize: 13,
     },
     
     turfCost: {
