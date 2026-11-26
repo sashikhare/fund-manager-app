@@ -63,6 +63,8 @@ export default function FundScreen() {
   }, [selectedGroup?.id, dispatch]);
 
   const handleSpend = async () => {
+    if (!selectedGroup?.id) return;
+
     const value = Number(amount);
     if (isNaN(value)) {
       setError("Please enter a valid numeric amount.");
@@ -89,7 +91,7 @@ export default function FundScreen() {
       date: new Date().toISOString(),
     };
 
-    await updateFundAPI(selectedGroup?.id, {
+    await updateFundAPI(selectedGroup.id, {
       fund: updatedFund,
       transactions: [newTransaction, ...transactions],
     });
@@ -302,6 +304,8 @@ export default function FundScreen() {
                 <Button
                   title="Confirm"
                   onPress={async () => {
+                    if (!selectedGroup?.id) return;
+
                     const value = Number(balance);
 
                     if (!balance || value < 0) {
