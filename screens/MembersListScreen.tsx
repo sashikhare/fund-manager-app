@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
-import { RootStackParamList } from "../../App";
+import { RootStackParamList } from "../App";
 
 import {
   createMemberAPI,
