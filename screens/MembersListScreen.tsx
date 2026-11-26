@@ -1,6 +1,12 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React, { useEffect, useLayoutEffect, useState } from "react";
-import { FlatList, Modal, TouchableOpacity, View } from "react-native";
+import {
+  FlatList,
+  Modal,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
 import { RootStackParamList } from "../../App";
@@ -34,7 +40,7 @@ export default function MembersListScreen({ navigation }: Props) {
   const members = useSelector((state: RootState) => state.app.members);
 
   const selectedGroup = useSelector(
-    (state: RootState) => state.app.selectedGroup
+    (state: RootState) => state.app.selectedGroup,
   );
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -50,25 +56,47 @@ export default function MembersListScreen({ navigation }: Props) {
   const hasMembers = members.length > 0;
 
   useEffect(() => {
+    let isActive = true;
+
+    // Never keep members from a previously selected group.
+    dispatch(setMembers([]));
+    setSelectedIds([]);
+    setShowModal(false);
+    setFirstName("");
+    setLastName("");
+
     if (!selectedGroup?.id) return;
 
     const load = async () => {
-      const data = await getMembersByGroupAPI(selectedGroup.id);
+      try {
+        const data = await getMembersByGroupAPI(selectedGroup.id);
 
-      dispatch(setMembers(data));
+        if (isActive) {
+          dispatch(setMembers(data));
+        }
+      } catch (error) {
+        console.error("Load Members Error:", error);
+        if (isActive) {
+          dispatch(setMembers([]));
+        }
+      }
     };
 
     load();
-  }, [selectedGroup]);
+
+    return () => {
+      isActive = false;
+    };
+  }, [selectedGroup?.id, dispatch]);
 
   useEffect(() => {
     setSelectedIds((prev) =>
-      prev.filter((id) => members.some((m) => m.id === id))
+      prev.filter((id) => members.some((m) => m.id === id)),
     );
   }, [members]);
 
   const handleAdd = async () => {
-    if (!firstName || !lastName) return;
+    if (!selectedGroup?.id || !firstName || !lastName) return;
 
     const tempId = Date.now().toString();
 
@@ -121,9 +149,39 @@ export default function MembersListScreen({ navigation }: Props) {
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
   };
+
+  if (!selectedGroup?.id) {
+    return (
+      <ScreenContainer>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingHorizontal: Spacing.xl,
+          }}
+        >
+          <Card style={styles.emptyCard}>
+            <Icon name="people-outline" size={64} color={Colors.textMuted} />
+            <Text variant="h3" align="center" style={{ marginTop: Spacing.lg }}>
+              No Group Selected
+            </Text>
+            <Text
+              variant="body"
+              color={Colors.textSecondary}
+              align="center"
+              style={{ marginTop: Spacing.sm }}
+            >
+              Please select a group to view its members.
+            </Text>
+          </Card>
+        </View>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer>
@@ -196,15 +254,15 @@ export default function MembersListScreen({ navigation }: Props) {
               item.membershipType === "GUEST"
                 ? "Guest"
                 : item.status === "APPROVED"
-                ? "Member"
-                : "Awaiting Approval";
+                  ? "Member"
+                  : "Awaiting Approval";
 
             const statusColor =
               item.membershipType === "GUEST"
                 ? Colors.textSecondary
                 : item.status === "APPROVED"
-                ? Colors.success
-                : Colors.warning;
+                  ? Colors.success
+                  : Colors.warning;
 
             return (
               <Card
@@ -411,3 +469,12 @@ export default function MembersListScreen({ navigation }: Props) {
     </ScreenContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  emptyCard: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Spacing.xxxl,
+    marginTop: Spacing.xxl,
+  },
+});

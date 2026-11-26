@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { FlatList, View } from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
 
 import { useDispatch, useSelector } from "react-redux";
 
@@ -316,46 +316,57 @@ export default function JoinedGroupsScreen() {
               paddingHorizontal: Spacing.xl,
             }}
           >
-            <Icon
-              name="people-circle-outline"
-              size={72}
-              color={Colors.textMuted}
-            />
+            <Card style={styles.emptyCard}>
+              <Icon
+                name="people-circle-outline"
+                size={72}
+                color={Colors.textMuted}
+              />
 
-            <Text
-              variant="h3"
-              align="center"
-              style={{
-                marginTop: Spacing.lg,
-              }}
-            >
-              No Groups Joined
-            </Text>
+              <Text
+                variant="h3"
+                align="center"
+                style={{
+                  marginTop: Spacing.lg,
+                }}
+              >
+                No Groups Joined
+              </Text>
 
-            <Text
-              variant="body"
-              align="center"
-              color={Colors.textSecondary}
-              style={{
-                marginTop: Spacing.sm,
-              }}
-            >
-              You haven't joined any groups yet.
-            </Text>
+              <Text
+                variant="body"
+                align="center"
+                color={Colors.textSecondary}
+                style={{
+                  marginTop: Spacing.sm,
+                }}
+              >
+                You haven't joined any groups yet.
+              </Text>
 
-            <Text
-              variant="caption"
-              align="center"
-              color={Colors.textMuted}
-              style={{
-                marginTop: Spacing.xs,
-              }}
-            >
-              Browse available groups from the "Join Group" tab.
-            </Text>
+              <Text
+                variant="caption"
+                align="center"
+                color={Colors.textMuted}
+                style={{
+                  marginTop: Spacing.xs,
+                }}
+              >
+                Browse available groups from the "Join Group" tab.
+              </Text>
+            </Card>
           </View>
         }
       />
     </ScreenContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  emptyCard: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Spacing.xxxl,
+    marginTop: Spacing.xxl,
+  },
+});

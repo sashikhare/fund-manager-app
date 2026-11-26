@@ -1,19 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { FlatList, View } from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
 import { useSelector } from "react-redux";
 
-import {
-  approveMemberAPI,
-  getPendingMembersAPI,
-} from "../api/memberApi";
+import { approveMemberAPI, getPendingMembersAPI } from "../api/memberApi";
 
-import {
-  Button,
-  Card,
-  Icon,
-  ScreenContainer,
-  Text,
-} from "../components";
+import { Button, Card, Icon, ScreenContainer, Text } from "../components";
 
 import { Colors, Spacing } from "../theme";
 
@@ -23,29 +14,43 @@ export default function PendingApprovalScreen() {
   const [members, setMembers] = useState<any[]>([]);
 
   const selectedGroup = useSelector(
-    (state: RootState) => state.app.selectedGroup
+    (state: RootState) => state.app.selectedGroup,
   );
 
-  const loadMembers = async () => {
-    if (!selectedGroup?.id) return;
-
-    const data = await getPendingMembersAPI(
-      selectedGroup.id
-    );
-
+  const loadMembers = async (groupId: string) => {
+    const data = await getPendingMembersAPI(groupId);
     setMembers(data);
   };
 
   useEffect(() => {
-    loadMembers();
-  }, [selectedGroup]);
+    let isActive = true;
 
-  const handleApprove = async (
-    relationId: string
-  ) => {
+    // Clear requests from the previously selected group immediately.
+    setMembers([]);
+
+    if (!selectedGroup?.id) return;
+
+    const load = async () => {
+      try {
+        const data = await getPendingMembersAPI(selectedGroup.id);
+        if (isActive) setMembers(data);
+      } catch (error) {
+        console.error("Load Pending Members Error:", error);
+        if (isActive) setMembers([]);
+      }
+    };
+
+    load();
+
+    return () => {
+      isActive = false;
+    };
+  }, [selectedGroup?.id]);
+
+  const handleApprove = async (relationId: string) => {
     await approveMemberAPI(relationId);
 
-    loadMembers();
+    if (selectedGroup?.id) loadMembers(selectedGroup.id);
   };
 
   if (!selectedGroup?.id) {
@@ -59,33 +64,30 @@ export default function PendingApprovalScreen() {
             paddingHorizontal: Spacing.xl,
           }}
         >
-          <Icon
-            name="people-outline"
-            size={56}
-            color={Colors.textMuted}
-          />
+          <Card style={styles.emptyCard}>
+            <Icon name="people-outline" size={56} color={Colors.textMuted} />
 
-          <Text
-            variant="h3"
-            align="center"
-            style={{
-              marginTop: Spacing.lg,
-            }}
-          >
-            No Group Selected
-          </Text>
+            <Text
+              variant="h3"
+              align="center"
+              style={{
+                marginTop: Spacing.lg,
+              }}
+            >
+              No Group Selected
+            </Text>
 
-          <Text
-            variant="body"
-            color={Colors.textSecondary}
-            align="center"
-            style={{
-              marginTop: Spacing.sm,
-            }}
-          >
-            Please select a group to
-            approve pending members.
-          </Text>
+            <Text
+              variant="body"
+              color={Colors.textSecondary}
+              align="center"
+              style={{
+                marginTop: Spacing.sm,
+              }}
+            >
+              Please select a group to approve pending members.
+            </Text>
+          </Card>
         </View>
       </ScreenContainer>
     );
@@ -135,8 +137,7 @@ export default function PendingApprovalScreen() {
                 marginTop: Spacing.sm,
               }}
             >
-              All member requests have
-              already been approved.
+              All member requests have already been approved.
             </Text>
           </View>
         }
@@ -160,11 +161,7 @@ export default function PendingApprovalScreen() {
                   marginRight: Spacing.md,
                 }}
               >
-                <Icon
-                  name="person-outline"
-                  size={24}
-                  color={Colors.primary}
-                />
+                <Icon name="person-outline" size={24} color={Colors.primary} />
               </View>
 
               <View style={{ flex: 1 }}>
@@ -173,10 +170,7 @@ export default function PendingApprovalScreen() {
                 </Text>
 
                 {item.email ? (
-                  <Text
-                    variant="bodySmall"
-                    color={Colors.textSecondary}
-                  >
+                  <Text variant="bodySmall" color={Colors.textSecondary}>
                     {item.email}
                   </Text>
                 ) : null}
@@ -186,9 +180,7 @@ export default function PendingApprovalScreen() {
             <Button
               title="Approve"
               leftIcon="checkmark-circle-outline"
-              onPress={() =>
-                handleApprove(item.relationId)
-              }
+              onPress={() => handleApprove(item.relationId)}
               fullWidth
             />
           </Card>
@@ -197,3 +189,12 @@ export default function PendingApprovalScreen() {
     </ScreenContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  emptyCard: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Spacing.xxxl,
+    marginTop: Spacing.xxl,
+  },
+});

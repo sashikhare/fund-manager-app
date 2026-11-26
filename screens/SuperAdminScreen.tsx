@@ -1,17 +1,13 @@
 import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useLayoutEffect, useState } from "react";
-import {
-  FlatList,
-  Pressable,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Alert, FlatList, Pressable, StyleSheet, View } from "react-native";
 import { useSelector } from "react-redux";
 
 import {
   createAdminAPI,
   deleteAdminAPI,
   getAdminsAPI,
+  resetAdminPasswordAPI,
 } from "../api/adminApi";
 
 import {
@@ -24,10 +20,7 @@ import {
   Text,
 } from "../components";
 
-import {
-  Colors,
-  Spacing
-} from "../theme";
+import { Colors, Spacing } from "../theme";
 
 import { RootState } from "../redux/store";
 
@@ -40,30 +33,34 @@ export default function SuperAdminScreen() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [mobile, setMobile] = useState("");
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastVisible, setToastVisible] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const navigation = useNavigation();
 
-  const currentUser = useSelector(
-    (state: RootState) => state.app.currentUser
-  );
+  const currentUser = useSelector((state: RootState) => state.app.currentUser);
 
   const SUPER_ADMIN_EMAIL = "sagar@email.com";
   const SUPER_ADMIN_PASSWORD = "123456";
 
+  useEffect(() => {
+    if (!toastVisible) return;
+
+    const timeout = setTimeout(() => setToastVisible(false), 3000);
+    return () => clearTimeout(timeout);
+  }, [toastVisible, toastMessage]);
+
   const toggleSelect = (id: string) => {
     setSelectedIds((prev = []) =>
-      prev.includes(id)
-        ? prev.filter((i) => i !== id)
-        : [...prev, id]
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
   const handleDelete = async () => {
-    await Promise.all(
-      selectedIds.map((id) => deleteAdminAPI(id))
-    );
+    await Promise.all(selectedIds.map((id) => deleteAdminAPI(id)));
 
     setSelectedIds([]);
 
@@ -76,6 +73,34 @@ export default function SuperAdminScreen() {
     setAdmins(data);
   };
 
+  const handleResetPassword = (email: string) => {
+    Alert.alert(
+      "Reset administrator password",
+      `Send a password reset email to ${email}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Send Email",
+          onPress: async () => {
+            try {
+              await resetAdminPasswordAPI(email);
+              Alert.alert(
+                "Email sent",
+                `A password reset link has been sent to ${email}.`,
+              );
+            } catch (error: any) {
+              console.error("Password reset error:", error);
+              Alert.alert(
+                "Unable to send email",
+                error?.message || "Please try again.",
+              );
+            }
+          },
+        },
+      ],
+    );
+  };
+
   useEffect(() => {
     loadAdmins();
   }, []);
@@ -84,19 +109,10 @@ export default function SuperAdminScreen() {
     navigation.setOptions({
       headerRight: () =>
         selectedIds.length > 0 && (
-          <Pressable
-            onPress={handleDelete}
-            style={styles.deleteBtn}
-          >
-            <Icon
-              name="trash-outline"
-              color={Colors.danger}
-            />
+          <Pressable onPress={handleDelete} style={styles.deleteBtn}>
+            <Icon name="trash-outline" color={Colors.danger} />
 
-            <Text
-              color={Colors.danger}
-              weight="600"
-            >
+            <Text color={Colors.danger} weight="600">
               Delete
             </Text>
           </Pressable>
@@ -105,33 +121,49 @@ export default function SuperAdminScreen() {
   }, [selectedIds]);
 
   const handleCreate = async () => {
-    await createAdminAPI(
-      email,
-      password,
-      {
-        firstName,
-        lastName,
-        mobile,
-      },
-      SUPER_ADMIN_EMAIL,
-      SUPER_ADMIN_PASSWORD
-    );
+    if (isCreating) return;
 
-    setShowForm(false);
+    setIsCreating(true);
 
-    setEmail("");
-    setPassword("");
-    setFirstName("");
-    setLastName("");
-    setMobile("");
+    try {
+      await createAdminAPI(
+        email.trim(),
+        password,
+        {
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          mobile: mobile.trim(),
+        },
+        SUPER_ADMIN_EMAIL,
+        SUPER_ADMIN_PASSWORD,
+      );
 
-    loadAdmins();
+      setShowForm(false);
+      setEmail("");
+      setPassword("");
+      setFirstName("");
+      setLastName("");
+      setMobile("");
+
+      await loadAdmins();
+
+      setToastMessage("Administrator created successfully");
+      setToastVisible(true);
+    } catch (error: any) {
+      console.error("Create administrator error:", error);
+
+      Alert.alert(
+        "Unable to create administrator",
+        error?.message || "Please try again.",
+      );
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
     <AnimatedBackground>
       <ScreenContainer>
-
         <FlatList
           data={admins}
           keyExtractor={(item) => item.id}
@@ -139,17 +171,11 @@ export default function SuperAdminScreen() {
           contentContainerStyle={styles.container}
           ListHeaderComponent={
             <>
-              <Text
-                variant="title"
-                weight="700"
-              >
+              <Text variant="title" weight="700">
                 Administrators
               </Text>
 
-              <Text
-                color={Colors.textSecondary}
-                style={styles.subtitle}
-              >
+              <Text color={Colors.textSecondary} style={styles.subtitle}>
                 Manage administrator accounts
               </Text>
 
@@ -162,11 +188,8 @@ export default function SuperAdminScreen() {
 
               {showForm && (
                 <Card style={styles.formCard}>
-
                   <View style={styles.row}>
-
                     <View style={styles.half}>
-
                       <Input
                         label="First Name"
                         value={firstName}
@@ -174,11 +197,9 @@ export default function SuperAdminScreen() {
                         leftIcon="person-outline"
                         containerStyle={styles.input}
                       />
-
                     </View>
 
                     <View style={styles.half}>
-
                       <Input
                         label="Last Name"
                         value={lastName}
@@ -186,9 +207,7 @@ export default function SuperAdminScreen() {
                         leftIcon="person-outline"
                         containerStyle={styles.input}
                       />
-
                     </View>
-
                   </View>
 
                   <Input
@@ -223,88 +242,70 @@ export default function SuperAdminScreen() {
                     title="Save Administrator"
                     leftIcon="save-outline"
                     onPress={handleCreate}
+                    loading={isCreating}
+                    disabled={isCreating}
                   />
-
                 </Card>
               )}
             </>
           }
           renderItem={({ item }) => {
-            const isSelected =
-              selectedIds.includes(item.id);
+            const isSelected = selectedIds.includes(item.id);
 
             return (
-              <Pressable
-                onPress={() => toggleSelect(item.id)}
-              >
+              <Pressable onPress={() => toggleSelect(item.id)}>
                 <Card
                   style={[
                     styles.adminCard,
 
-                    isSelected &&
-                      styles.adminCardSelected,
+                    isSelected && styles.adminCardSelected,
                   ]}
                 >
                   <View style={styles.cardHeader}>
-
                     <View style={styles.nameRow}>
-
                       <Icon
                         name="person-circle-outline"
                         color={Colors.primary}
                       />
 
-                      <Text
-                        variant="headline"
-                        weight="600"
-                      >
-                        {item.firstName}{" "}
-                        {item.lastName}
+                      <Text variant="headline" weight="600">
+                        {item.firstName} {item.lastName}
                       </Text>
-
                     </View>
 
                     {isSelected && (
-                      <Icon
-                        name="checkmark-circle"
-                        color={Colors.success}
-                      />
+                      <Icon name="checkmark-circle" color={Colors.success} />
                     )}
-
                   </View>
 
                   <View style={styles.infoRow}>
-                    <Icon
-                      name="mail-outline"
-                      color={Colors.textSecondary}
-                    />
+                    <Icon name="mail-outline" color={Colors.textSecondary} />
 
-                    <Text
-                      color={Colors.textSecondary}
-                    >
-                      {item.email}
-                    </Text>
+                    <Text color={Colors.textSecondary}>{item.email}</Text>
                   </View>
 
                   <View style={styles.infoRow}>
-                    <Icon
-                      name="call-outline"
-                      color={Colors.textSecondary}
-                    />
+                    <Icon name="call-outline" color={Colors.textSecondary} />
 
-                    <Text
-                      color={Colors.textSecondary}
-                    >
+                    <Text color={Colors.textSecondary}>
                       {item.mobile || "No mobile"}
                     </Text>
                   </View>
 
+                  <Pressable
+                    style={styles.resetPasswordButton}
+                    onPress={() => handleResetPassword(item.email)}
+                  >
+                    <Icon name="mail-outline" color={Colors.primary} />
+                    <Text color={Colors.primary} weight="600">
+                      Reset Password
+                    </Text>
+                  </Pressable>
                 </Card>
               </Pressable>
             );
           }}
         />
-
       </ScreenContainer>
     </AnimatedBackground>
   );
@@ -378,5 +379,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: Spacing.sm,
     marginBottom: Spacing.sm,
+  },
+
+  resetPasswordButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: Spacing.sm,
+    marginTop: Spacing.md,
+    paddingVertical: Spacing.sm,
   },
 });

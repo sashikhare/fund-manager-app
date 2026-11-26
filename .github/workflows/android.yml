@@ -29,15 +29,15 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Build APK (Develop)
+      - name: Build Development APK
         if: github.ref == 'refs/heads/develop'
         run: |
           eas build \
             --platform android \
-            --profile preview \
+            --profile development \
             --non-interactive
 
-      - name: Build AAB (Production)
+      - name: Build Production AAB
         if: github.ref == 'refs/heads/main'
         run: |
           eas build \

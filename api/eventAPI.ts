@@ -9,7 +9,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { auth, db } from "../firebase/firebase";
 
 export const subscribeEvents = (callback: (data: any[]) => void) => {
   return onSnapshot(collection(db, "events"), (snapshot) => {
@@ -29,11 +29,18 @@ export const updateEventMemberAPI = async (
 ) => {
   const eventRef = doc(db, "events", eventId);
 
+  // Only the admin who created the event may update contributions.
+  const snapshot = await getDoc(eventRef);
+  if (!snapshot.exists()) throw new Error("Event not found");
+  if (!auth.currentUser?.uid || snapshot.data().createdBy !== auth.currentUser.uid) {
+    throw new Error("You are not allowed to manage this event");
+  }
+  if (snapshot.data().isSettled) throw new Error("This event is already settled");
+
   // get current event
   // NOTE: Firestore doesn't support partial array update easily
   // so we overwrite full members array
 
-  const snapshot = await getDoc(eventRef);
   const event = snapshot.data();
 
   const updatedMembers = event.members.map((m: any) =>
@@ -47,8 +54,12 @@ export const updateEventMemberAPI = async (
 
 // CREATE EVENT
 export const createEventAPI = async (event: any) => {
+  const uid = auth.currentUser?.uid;
+  if (!uid) throw new Error("Please sign in before creating an event");
+
   const docRef = await addDoc(collection(db, "events"), {
     ...event,
+    createdBy: uid,
     createdAt: new Date().toISOString(),
   });
   return { id: docRef.id, ...event };
@@ -56,9 +67,13 @@ export const createEventAPI = async (event: any) => {
 
 // SETTLE EVENT
 export const settleEventAPI = async (eventId: string) => {
-  await updateDoc(doc(db, "events", eventId), {
-    isSettled: true,
-  });
+  const eventRef = doc(db, "events", eventId);
+  const snapshot = await getDoc(eventRef);
+  if (!snapshot.exists()) throw new Error("Event not found");
+  if (!auth.currentUser?.uid || snapshot.data().createdBy !== auth.currentUser.uid) {
+    throw new Error("You are not allowed to settle this event");
+  }
+  await updateDoc(eventRef, { isSettled: true });
 };
 
 export const getEventsByGroupAPI = async (groupId: string) => {
@@ -165,7 +180,16 @@ export const subscribeEventsByGroupAPI = (
   groupId: string,
   callback: (events: any[]) => void
 ) => {
-  const q = query(collection(db, "events"), where("groupId", "==", groupId));
+  const uid = auth.currentUser?.uid;
+  if (!uid) {
+    callback([]);
+    return () => {};
+  }
+  const q = query(
+    collection(db, "events"),
+    where("groupId", "==", groupId),
+    where("createdBy", "==", uid)
+  );
 
   return onSnapshot(q, (snapshot) => {
     const events = snapshot.docs
