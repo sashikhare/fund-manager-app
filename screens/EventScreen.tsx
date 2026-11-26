@@ -22,9 +22,6 @@ export default function EventScreen() {
 
   return (
     <Tab.Navigator
-      sceneStyle={{
-        backgroundColor: Colors.background,
-      }}
       screenOptions={{
         tabBarStyle: {
           backgroundColor: Colors.background,
@@ -41,7 +38,7 @@ export default function EventScreen() {
           borderRadius: 999,
         },
 
-        tabBarActiveTintColor: Colors.textPrimary,
+        tabBarActiveTintColor: Colors.text,
 
         tabBarInactiveTintColor: Colors.textSecondary,
 
