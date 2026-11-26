@@ -22,6 +22,11 @@ export default function CreateGroupScreen() {
   const [noShowFee, setNoShowFee] = useState("");
 
   const handleCreate = async () => {
+    if (!user?.email) {
+      alert("Please sign in before creating a group.");
+      return;
+    }
+
     try {
       const groupId = await createGroupAPI(
         {
@@ -31,7 +36,7 @@ export default function CreateGroupScreen() {
           guestFee: Number(guestFee),
           noShowFee: Number(noShowFee),
         },
-        user?.email,
+        user.email,
       );
 
       // Clear form after successful creation
