@@ -74,6 +74,31 @@ export default function CreateEventTab() {
     loadMembers();
   }, [selectedGroup]);
 
+  if (!selectedGroup?.id) {
+    return (
+      <View style={[styles.container, styles.noGroupContainer]}>
+        <Card style={styles.emptyCard}>
+          <Icon name="people-outline" size={56} color={Colors.textMuted} />
+          <Text
+            variant="subtitle"
+            weight="600"
+            align="center"
+            style={styles.emptyTitle}
+          >
+            No Group Selected
+          </Text>
+          <Text
+            variant="bodySmall"
+            align="center"
+            color={Colors.textSecondary}
+          >
+            Please select a group to create an event.
+          </Text>
+        </Card>
+      </View>
+    );
+  }
+
   const toggleMember = (id: string) => {
     setSelectedMembers((prev) =>
       prev.includes(id)
@@ -632,6 +657,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background
+  },
+
+  noGroupContainer: {
+    justifyContent: "center",
+    padding: Spacing.lg,
+  },
+
+  emptyCard: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Spacing.xxxl,
+    marginTop: Spacing.xxl,
+  },
+
+  emptyTitle: {
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.sm,
   },
 
   content: {
