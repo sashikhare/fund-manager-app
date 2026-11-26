@@ -11,8 +11,18 @@ export default function JoinGroupScreen() {
   const [groupId, setGroupId] = useState("");
 
   const handleJoin = async () => {
+    if (!user) {
+      alert("Please sign in before joining a group.");
+      return;
+    }
+
+    if (!groupId.trim()) {
+      alert("Please enter a group ID.");
+      return;
+    }
+
     try {
-      await joinGroupAPI(groupId, user.uid);
+      await joinGroupAPI(groupId.trim(), user.uid, "MEMBER");
       alert("Joined successfully");
       setGroupId("");
     } catch (e: any) {
