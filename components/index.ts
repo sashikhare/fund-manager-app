@@ -1,4 +1,3 @@
-export { default as AnimatedCircle } from "./Animated/AnimatedCircle";
 export { default as Interactive } from "./Animated/Interactive";
 export { default as AnimatedBackground } from "./Background";
 export { default as BottomTab } from "./BottomTab";
