@@ -11,9 +11,6 @@ const TopTab = createMaterialTopTabNavigator();
 export default function MemberGroupTabScreen() {
   return (
     <TopTab.Navigator
-      sceneStyle={{
-        backgroundColor: Colors.background,
-      }}
       screenOptions={{
         tabBarStyle: {
           backgroundColor: Colors.background,
@@ -30,7 +27,7 @@ export default function MemberGroupTabScreen() {
           borderRadius: 999,
         },
 
-        tabBarActiveTintColor: Colors.textPrimary,
+        tabBarActiveTintColor: Colors.text,
 
         tabBarInactiveTintColor: Colors.textSecondary,
 
