@@ -183,7 +183,7 @@ export default function CreateEventTab() {
                   title={
                     eventDate ? eventDate.toDateString() : "Select Event Date"
                   }
-                  variant="outline"
+                  variant="secondary"
                   leftIcon="calendar-outline"
                   onPress={() => setShowDatePicker(true)}
                 />
